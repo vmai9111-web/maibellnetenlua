@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Người Que Tránh Tên Lửa - Mobile Edition</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        body {
+            background-color: #0b0e17;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: fixed;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 960px;
+            max-height: 540px;
+            background: #141824;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 14, 23, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            padding: 20px;
+        }
+        .hidden {
+            display: none !important;
+        }
+        h1 {
+            font-size: clamp(28px, 6vw, 46px);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #ff4757;
+            text-shadow: 0 0 15px rgba(255, 71, 87, 0.7);
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .subtitle {
+            font-size: clamp(12px, 3vw, 16px);
+            color: #a4b0be;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #b33939;
+            text-align: center;
+        }
+        .btn.secondary {
+            background: linear-gradient(135deg, #1e90ff, #5352ed);
+            box-shadow: 0 4px 0 #182c61;
+        }
+        .btn.tertiary {
+            background: linear-gradient(135deg, #2ed573, #1eae60);
+            box-shadow: 0 4px 0 #166d3b;
+        }
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .hud-box {
+            background: rgba(15, 20, 32, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        .hud-center {
+            text-align: center;
+            background: rgba(15, 20, 32, 0.9);
+            border: 1px solid rgba(255, 71, 87, 0.4);
+            padding: 6px 14px;
+            border-radius: 6px;
+        }
+        .score-big {
+            font-size: 18px;
+            font-weight: 800;
+            color: #ffa502;
+        }
+        .hp-bar {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+        }
+        .heart {
+            width: 12px;
+            height: 12px;
+            background: #ff4757;
+            border-radius: 2px;
+        }
+        .heart.lost {
+            background: #2f3542;
+        }
+
+        /* VIRTUAL TOUCH CONTROLS & SKILLS */
+        #touch-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
+            height: 140px;
+            pointer-events: none;
+            z-index: 15;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 15px;
+        }
+        .touch-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            pointer-events: auto;
+        }
+        /* Virtual Circles / Joysticks & Buttons */
+        .v-circle {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.12);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            touch-action: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .v-circle:active, .v-circle.pressed {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.95);
+        }
+        .skill-btn {
+            background: linear-gradient(135deg, #ffa502, #ff7f50);
+            border-color: #ff6348;
+        }
+        .skill-btn.cooldown {
+            opacity: 0.5;
+            filter: grayscale(0.7);
+        }
+        .dpad-container {
+            position: relative;
+            width: 130px;
+            height: 110px;
+            pointer-events: auto;
+        }
+        .joy-base {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            left: 10px;
+            top: 0;
+        }
+        .joy-stick {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(0, 210, 211, 0.6);
+            border: 2px solid #00d2d3;
+            left: 40px;
+            top: 30px;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas" width="960" height="540"></canvas>
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+        <div class="hud-box" id="p1-hud">
+            <div style="color:#00d2d3; font-weight:700;" id="p1-label">P1</div>
+            <div class="hp-bar" id="p1-hp"></div>
+        </div>
+        <div class="hud-center">
+            <div style="font-size:10px; color:#a4b0be;">ĐIỂM</div>
+            <div class="score-big" id="score-val">0</div>
+        </div>
+        <div class="hud-box" id="p2-hud" style="text-align:right;">
+            <div style="color:#ff9f43; font-weight:700;" id="p2-label">P2</div>
+            <div class="hp-bar" id="p2-hp" style="justify-content:flex-end;"></div>
+        </div>
+    </div>
+
+    <!-- TOUCH CONTROLS OVERLAY -->
+    <div id="touch-controls" class="hidden">
+        <!-- Left Side Control (P1 or Solo) -->
+        <div class="touch-group" id="group-p1">
+            <div class="dpad-container" id="joystick-p1">
+                <div class="joy-base"></div>
+                <div class="joy-stick" id="stick-p1"></div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="v-circle" id="btn-jump-p1" ontouchstart="handleTouchAction('p1', 'jump', true)" ontouchend="handleTouchAction('p1', 'jump', false)">⬆️</div>
+                <div class="v-circle skill-btn" id="btn-skill-p1" ontouchstart="handleTouchAction('p1', 'skill', true)" ontouchend="handleTouchAction('p1', 'skill', false)">⚡</div>
+            </div>
+        </div>
+
+        <!-- Right Side Control (P2 in 2P Mode) -->
+        <div class="touch-group hidden" id="group-p2">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="v-circle" id="btn-jump-p2" ontouchstart="handleTouchAction('p2', 'jump', true)" ontouchend="handleTouchAction('p2', 'jump', false)">⬆️</div>
+                <div class="v-circle skill-btn" id="btn-skill-p2" ontouchstart="handleTouchAction('p2', 'skill', true)" ontouchend="handleTouchAction('p2', 'skill', false)">⚡</div>
+            </div>
+            <div class="dpad-container" id="joystick-p2">
+                <div class="joy-base"></div>
+                <div class="joy-stick" id="stick-p2" style="background: rgba(255, 159, 67, 0.6); border-color: #ff9f43;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN MENU -->
+    <div id="menu-screen" class="overlay">
+        <h1>ROCKET STRIKE</h1>
+        <div class="subtitle">MOBILE EDITION + KỸ NĂNG ĐẶC BIỆT</div>
+        <div class="btn-group">
+            <button class="btn" onclick="startGame('solo')">1 NGƯỜI (SINH TỒN)</button>
+            <button class="btn secondary" onclick="startGame('ai')">ĐẤU VỚI MÁY (VS AI)</button>
+            <button class="btn tertiary" onclick="startGame('pvp')">2 NGƯỜI CHƠI (2 CIRCLES)</button>
+        </div>
+    </div>
+
+    <!-- GAME OVER -->
+    <div id="gameover-screen" class="overlay hidden">
+        <h1 id="winner-title">KẾT THÚC!</h1>
+        <div class="subtitle" id="result-text" style="margin: 15px 0; font-size: 18px;"></div>
+        <div class="btn-group">
+            <button class="btn" onclick="startGame(gameMode)">CHƠI LẠI</button>
+            <button class="btn secondary" onclick="backToMenu()">MENU CHÍNH</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width;
+const H = canvas.height;
+const GROUND_Y = H - 54;
+
+let gameMode = 'solo';
+let gameRunning = false;
+let score = 0;
+let highScore = parseInt(localStorage.getItem('rocketStrikeBest') || '0', 10);
+let frameCount = 0;
+let screenShake = 0;
+let players = [];
+let rockets = [];
+let particles = [];
+let powerups = [];
+let stars = [];
+let timeSlowTimer = 0;
+
+for (let i = 0; i < 50; i++) {
+    stars.push({
+        x: Math.random() * W,
+        y: Math.random() * (GROUND_Y - 50),
+        r: Math.random() * 1.5 + 0.5,
+        alpha: Math.random() * 0.7 + 0.2
+    });
+}
+
+const platforms = [
+    { x: 140, y: GROUND_Y - 110, w: 170, h: 12 },
+    { x: W - 310, y: GROUND_Y - 110, w: 170, h: 12 },
+    { x: W / 2 - 110, y: GROUND_Y - 200, w: 220, h: 12 }
+];
+
+// Touch State for virtual joysticks & buttons
+const touchState = {
+    p1: { moveX: 0, jump: false, skill: false },
+    p2: { moveX: 0, jump: false, skill: false }
+};
+
+class Stickman {
+    constructor(x, color, name, isAI = false, id = 'p1') {
+        this.x = x;
+        this.y = GROUND_Y;
+        this.vx = 0;
+        this.vy = 0;
+        this.color = color;
+        this.name = name;
+        this.isAI = isAI;
+        this.id = id;
+
+        this.hp = 3;
+        this.maxHp = 3;
+        this.alive = true;
+        this.facing = 1;
+        this.animPhase = 0;
+        this.jumpsLeft = 2;
+        this.jumpKeyHold = false;
+        this.invincible = 0;
+        this.shield = false;
+        this.speedBoost = 0;
+        this.skillCooldown = 0;
+    }
+
+    getHeight() { return 54; }
+
+    update() {
+        if (!this.alive) return;
+
+        if (this.invincible > 0) this.invincible--;
+        if (this.speedBoost > 0) this.speedBoost--;
+        if (this.skillCooldown > 0) this.skillCooldown--;
+
+        const moveSpeed = this.speedBoost > 0 ? 7.5 : 5.0;
+        let moveDir = 0;
+        let wantJump = false;
+        let wantSkill = false;
+
+        if (this.isAI) {
+            const ai = this.computeAI();
+            moveDir = ai.dir;
+            wantJump = ai.jump;
+            if (ai.skill && this.skillCooldown === 0) this.useSkill();
+        } else {
+            const t = touchState[this.id];
+            moveDir = t.moveX;
+            wantJump = t.jump;
+            if (t.skill && this.skillCooldown === 0) {
+                this.useSkill();
+                t.skill = false; // consume trigger
+            }
+        }
+
+        this.vx = moveDir * moveSpeed;
+        if (moveDir !== 0) {
+            this.facing = moveDir > 0 ? 1 : -1;
+            this.animPhase += 0.28;
+        } else {
+            this.vx *= 0.75;
+            this.animPhase += 0.05;
+        }
+
+        // Jump & Double Jump
+        if (wantJump && !this.jumpKeyHold && this.jumpsLeft > 0) {
+            this.vy = -12.5;
+            this.jumpsLeft--;
+            this.jumpKeyHold = true;
+            for (let i = 0; i < 5; i++) {
+                particles.push(new Particle(this.x, this.y, this.color, (Math.random()-0.5)*4, Math.random()*2, 14));
+            }
+        }
+        if (!wantJump) this.jumpKeyHold = false;
+
+        // Gravity
+        const prevY = this.y;
+        this.vy += 0.58;
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (this.x < 24) this.x = 24;
+        if (this.x > W - 24) this.x = W - 24;
+
+        // Platform collision
+        if (this.vy > 0) {
+            for (const pf of platforms) {
+                if (this.x >= pf.x && this.x <= pf.x + pf.w && prevY <= pf.y && this.y >= pf.y) {
+                    this.y = pf.y;
+                    this.vy = 0;
+                    this.jumpsLeft = 2;
+                }
+            }
+        }
+
+        if (this.y >= GROUND_Y) {
+            this.y = GROUND_Y;
+            this.vy = 0;
+            this.jumpsLeft = 2;
+        }
+    }
+
+    useSkill() {
+        this.skillCooldown = 300; // 5 seconds at 60fps
+        // INTERESTING SKILL: Quantum Dash / Shockwave / Time Warp
+        const skillType = Math.random();
+        if (skillType < 0.35) {
+            // Skill 1: Quantum Dash (Teleport forward)
+            this.x += this.facing * 120;
+            this.invincible = 40;
+            for (let i = 0; i < 12; i++) particles.push(new Particle(this.x, this.y - 25, '#00d2d3', (Math.random()-0.5)*8, (Math.random()-0.5)*8, 20));
+        } else if (skillType < 0.7) {
+            // Skill 2: Shockwave (Destroy / push back nearby rockets)
+            for (let r of rockets) {
+                if (Math.hypot(r.x - this.x, r.y - this.y) < 180) {
+                    r.vx *= -1.5;
+                    r.vy *= -1.5;
+                }
+            }
+            screenShake = 10;
+            for (let i = 0; i < 20; i++) particles.push(new Particle(this.x, this.y - 25, '#ffa502', (Math.random()-0.5)*10, (Math.random()-0.5)*10, 25));
+        } else {
+            // Skill 3: Time Warp (Slow down all rockets for 4 seconds)
+            timeSlowTimer = 240;
+            for (let i = 0; i < 15; i++) particles.push(new Particle(this.x, this.y - 25, '#ff4757', (Math.random()-0.5)*6, (Math.random()-0.5)*6, 30));
+        }
+    }
+
+    computeAI() {
+        let dir = 0, jump = false, skill = false;
+        let danger = null, minDist = 9999;
+        for (const r of rockets) {
+            const d = Math.hypot(r.x - this.x, r.y - this.y);
+            if (d < minDist) { minDist = d; danger = r; }
+        }
+        if (danger && minDist < 200) {
+            if (danger.x > this.x) dir = -1; else dir = 1;
+            if (minDist < 90 && Math.random() < 0.4) jump = true;
+            if (minDist < 70 && Math.random() < 0.1) skill = true;
+        } else {
+            if (this.x < W * 0.4) dir = 1;
+            else if (this.x > W * 0.6) dir = -1;
+        }
+        return { dir, jump, skill };
+    }
+
+    takeDamage() {
+        if (this.invincible > 0 || !this.alive) return;
+        if (this.shield) {
+            this.shield = false;
+            this.invincible = 50;
+            return;
+        }
+        this.hp--;
+        this.invincible = 75;
+        screenShake = 12;
+        updateHUD();
+
+        for (let i = 0; i < 18; i++) {
+            particles.push(new Particle(this.x, this.y - 25, this.color, (Math.random()-0.5)*8, (Math.random()-0.5)*8, 24));
+        }
+        if (this.hp <= 0) {
+            this.alive = false;
+            checkGameOver();
+        }
+    }
+
+    draw() {
+        if (!this.alive) return;
+        if (this.invincible > 0 && Math.floor(this.invincible / 4) % 2 === 0) return;
+
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+
+        const swing = Math.abs(this.vx) > 0.5 ? Math.sin(this.animPhase) * 10 : 0;
+        // Head
+        ctx.beginPath(); ctx.arc(0, -45, 8, 0, Math.PI * 2); ctx.stroke();
+        // Body
+        ctx.beginPath(); ctx.moveTo(0, -37); ctx.lineTo(0, -18); ctx.stroke();
+        // Arms
+        ctx.beginPath(); ctx.moveTo(0, -32); ctx.lineTo(swing, -20); ctx.moveTo(0, -32); ctx.lineTo(-swing, -20); ctx.stroke();
+        // Legs
+        ctx.beginPath(); ctx.moveTo(0, -18); ctx.lineTo(swing, 0); ctx.moveTo(0, -18); ctx.lineTo(-swing, 0); ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.name, 0, -58);
+        ctx.restore();
+    }
+}
+
+class Rocket {
+    constructor(type) {
+        this.type = type;
+        const speedScale = (1 + Math.min(score / 1000, 1.2)) * (timeSlowTimer > 0 ? 0.5 : 1);
+
+        if (type === 'vertical') {
+            this.x = 40 + Math.random() * (W - 80);
+            this.y = -30;
+            this.vx = (Math.random() - 0.5) * 1.2;
+            this.vy = (4.5 + Math.random() * 2) * speedScale;
+            this.warningTimer = 25;
+        } else {
+            const fromLeft = Math.random() < 0.5;
+            this.x = fromLeft ? -30 : W + 30;
+            this.y = GROUND_Y - 35;
+            this.vx = (fromLeft ? 1 : -1) * (5.5 + Math.random() * 2) * speedScale;
+            this.vy = 0;
+            this.warningTimer = 30;
+        }
+    }
+
+    update() {
+        if (this.warningTimer > 0) {
+            this.warningTimer--;
+            return true;
+        }
+        const speedMult = timeSlowTimer > 0 ? 0.5 : 1;
+        this.x += this.vx * speedMult;
+        this.y += this.vy * speedMult;
+
+        if (this.y >= GROUND_Y || this.x < -60 || this.x > W + 60) return false;
+
+        for (const p of players) {
+            if (!p.alive) continue;
+            if (Math.hypot(p.x - this.x, (p.y - 25) - this.y) < 22) {
+                p.takeDamage();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    draw() {
+        if (this.warningTimer > 0) {
+            ctx.strokeStyle = 'rgba(255, 71, 87, 0.5)';
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            if (this.type === 'horizontal') { ctx.moveTo(0, this.y); ctx.lineTo(W, this.y); }
+            else { ctx.moveTo(this.x, 0); ctx.lineTo(this.x, GROUND_Y); }
+            ctx.stroke();
+            ctx.setLineDash([]);
+            return;
+        }
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(Math.atan2(this.vy, this.vx));
+        ctx.fillStyle = '#ff4757';
+        ctx.beginPath(); ctx.roundRect(-12, -4, 20, 8, 3); ctx.fill();
+        ctx.restore();
+    }
+}
+
+class Particle {
+    constructor(x, y, color, vx, vy, life) {
+        this.x = x; this.y = y; this.color = color; this.vx = vx; this.vy = vy; this.life = life; this.maxLife = life;
+    }
+    update() { this.x += this.vx; this.y += this.vy; this.life--; return this.life > 0; }
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.life / this.maxLife;
+        ctx.fillStyle = this.color;
+        ctx.beginPath(); ctx.arc(this.x, this.y, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+    }
+}
+
+function updateHUD() {
+    document.getElementById('score-val').textContent = Math.floor(score);
+    const p1Container = document.getElementById('p1-hp');
+    p1Container.innerHTML = '';
+    if (players[0]) {
+        for (let i = 0; i < players[0].maxHp; i++) {
+            const d = document.createElement('div');
+            d.className = 'heart' + (i >= players[0].hp ? ' lost' : '');
+            p1Container.appendChild(d);
+        }
+    }
+    const p2Hud = document.getElementById('p2-hud');
+    const p2Container = document.getElementById('p2-hp');
+    p2Container.innerHTML = '';
+    if (players.length > 1) {
+        p2Hud.classList.remove('hidden');
+        for (let i = 0; i < players[1].maxHp; i++) {
+            const d = document.createElement('div');
+            d.className = 'heart' + (i >= players[1].hp ? ' lost' : '');
+            p2Container.appendChild(d);
+        }
+    } else {
+        p2Hud.classList.add('hidden');
+    }
+}
+
+function handleTouchAction(playerKey, action, isPressed) {
+    if (action === 'jump') touchState[playerKey].jump = isPressed;
+    if (action === 'skill' && isPressed) touchState[playerKey].skill = true;
+}
+
+// Setup Virtual Joysticks
+function setupJoystick(containerId, stickId, playerKey) {
+    const container = document.getElementById(containerId);
+    const stick = document.getElementById(stickId);
+    let active = false;
+    let center = { x: 0, y: 0 };
+
+    container.addEventListener('touchstart', e => {
+        active = true;
+        const rect = container.getBoundingClientRect();
+        center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        handleMove(e.touches[0]);
+    });
+    window.addEventListener('touchmove', e => {
+        if (!active) return;
+        for (let t of e.touches) {
+            handleMove(t);
+        }
+    });
+    window.addEventListener('touchend', () => {
+        active = false;
+        stick.style.transform = `translate(0px, 0px)`;
+        touchState[playerKey].moveX = 0;
+    });
+
+    function handleMove(touch) {
+        const dx = touch.clientX - center.x;
+        const dist = Math.min(Math.abs(dx), 45);
+        const angle = dx > 0 ? 1 : -1;
+        if (Math.abs(dx) > 5) {
+            touchState[playerKey].moveX = angle * (dist / 45);
+            stick.style.transform = `translate(${dist * angle}px, 0px)`;
+        } else {
+            touchState[playerKey].moveX = 0;
+            stick.style.transform = `translate(0px, 0px)`;
+        }
+    }
+}
+
+setupJoystick('joystick-p1', 'stick-p1', 'p1');
+setupJoystick('joystick-p2', 'stick-p2', 'p2');
+
+function startGame(mode) {
+    gameMode = mode;
+    score = 0;
+    frameCount = 0;
+    rockets = [];
+    particles = [];
+    players = [];
+    timeSlowTimer = 0;
+
+    if (mode === 'solo' || mode === 'ai') {
+        players.push(new Stickman(W * 0.4, '#00d2d3', 'P1', false, 'p1'));
+        if (mode === 'ai') players.push(new Stickman(W * 0.6, '#ff9f43', 'AI', true, 'p2'));
+        document.getElementById('group-p2').classList.add('hidden');
+    } else if (mode === 'pvp') {
+        // 2 Circles / 2 Joysticks for 2P mode!
+        players.push(new Stickman(W * 0.35, '#00d2d3', 'P1', false, 'p1'));
+        players.push(new Stickman(W * 0.65, '#ff9f43', 'P2', false, 'p2'));
+        document.getElementById('group-p2').classList.remove('hidden');
+    }
+
+    document.getElementById('menu-screen').classList.add('hidden');
+    document.getElementById('gameover-screen').classList.add('hidden');
+    document.getElementById('hud').classList.remove('hidden');
+    document.getElementById('touch-controls').classList.remove('hidden');
+
+    updateHUD();
+    gameRunning = true;
+}
+
+function backToMenu() {
+    gameRunning = false;
+    document.getElementById('gameover-screen').classList.add('hidden');
+    document.getElementById('hud').classList.add('hidden');
+    document.getElementById('touch-controls').classList.add('hidden');
+    document.getElementById('menu-screen').classList.remove('hidden');
+}
+
+function checkGameOver() {
+    const aliveList = players.filter(p => p.alive);
+    if ((gameMode === 'solo' && aliveList.length === 0) || (gameMode !== 'solo' && aliveList.length <= 1)) {
+        gameRunning = false;
+        document.getElementById('winner-title').textContent = aliveList.length === 1 ? `${aliveList[0].name} THẮNG!` : 'KẾT THÚC!';
+        document.getElementById('result-text').innerHTML = `Điểm đạt được: <b>${Math.floor(score)}</b>`;
+        document.getElementById('gameover-screen').classList.remove('hidden');
+    }
+}
+
+function gameLoop() {
+    requestAnimationFrame(gameLoop);
+
+    ctx.fillStyle = '#0b0e17';
+    ctx.fillRect(0, 0, W, H);
+
+    // Stars
+    for (const s of stars) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Platforms
+    for (const pf of platforms) {
+        ctx.fillStyle = '#2f3542';
+        ctx.beginPath(); ctx.roundRect(pf.x, pf.y, pf.w, pf.h, 4); ctx.fill();
+    }
+
+    // Ground
+    ctx.fillStyle = '#1e222d';
+    ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+    ctx.strokeStyle = '#ff4757'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(W, GROUND_Y); ctx.stroke();
+
+    if (gameRunning) {
+        frameCount++;
+        score += 0.25;
+        if (timeSlowTimer > 0) timeSlowTimer--;
+        if (frameCount % 10 === 0) updateHUD();
+
+        const spawnInt = Math.max(20, Math.floor(50 - score / 35));
+        if (frameCount % spawnInt === 0) {
+            rockets.push(new Rocket(Math.random() < 0.7 ? 'vertical' : 'horizontal'));
+        }
+
+        for (const p of players) p.update();
+        rockets = rockets.filter(r => r.update());
+        particles = particles.filter(pt => pt.update());
+    }
+
+    for (const p of players) p.draw();
+    for (const r of rockets) r.draw();
+    for (const pt of particles) pt.draw();
+}
+
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>

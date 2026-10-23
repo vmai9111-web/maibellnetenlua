@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.rocketstrike.game" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Rocket Strike Mobile</name>
+    <description>Trò chơi Người Que Tránh Tên Lửa phiên bản Mobile</description>
+    <author email="dev@rocketstrike.com" href="https://github.com/">Developer</author>
+    <content src="index.html" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <preference name="Orientation" value="landscape" />
+    <preference name="Fullscreen" value="true" />
+    <engine name="android" spec="^12.0.0" />
+</widget>
