@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>maibellnetenlua</title>
+    <title>maibellnetenlua - Top Down Edition</title>
     <style>
         * {
             box-sizing: border-box;
@@ -32,8 +32,9 @@
             height: 100vh;
             max-width: 960px;
             max-height: 540px;
-            background: #141824;
+            background: #101420;
             overflow: hidden;
+            border: 2px solid #2f3542;
         }
         canvas {
             display: block;
@@ -59,7 +60,7 @@
             display: none !important;
         }
         h1 {
-            font-size: clamp(30px, 6vw, 48px);
+            font-size: clamp(28px, 6vw, 46px);
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 2px;
@@ -84,10 +85,10 @@
         }
         .skill-selector-container {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             margin-bottom: 20px;
             width: 100%;
-            max-width: 500px;
+            max-width: 520px;
             justify-content: center;
         }
         .skill-card {
@@ -189,7 +190,7 @@
             background: #2f3542;
         }
 
-        /* VIRTUAL JOYSTICKS (SUPREME STICKMAN DUELIST STYLE) */
+        /* VIRTUAL JOYSTICKS FOR TOP-DOWN CONTROL */
         #touch-controls {
             position: absolute;
             bottom: 20px;
@@ -254,7 +255,7 @@
             <div class="hp-bar" id="p1-hp"></div>
         </div>
         <div class="hud-center">
-            <div style="font-size:10px; color:#a4b0be;">ĐIỂM</div>
+            <div style="font-size:10px; color:#a4b0be;">ĐIỂM SINH TỒN</div>
             <div class="score-big" id="score-val">0</div>
         </div>
         <div class="hud-box" id="p2-hud" style="text-align:right;">
@@ -263,16 +264,14 @@
         </div>
     </div>
 
-    <!-- TOUCH CONTROLS OVERLAY -->
+    <!-- TOUCH CONTROLS -->
     <div id="touch-controls" class="hidden">
-        <!-- P1 Joystick -->
         <div class="joy-container" id="joystick-p1">
             <div class="joy-base"></div>
             <div class="joy-stick" id="stick-p1"></div>
             <div class="cd-indicator" id="cd-p1">SKILL: SẴN SÀNG</div>
         </div>
 
-        <!-- P2 Joystick (2P Mode) -->
         <div class="joy-container hidden" id="joystick-p2">
             <div class="joy-base"></div>
             <div class="joy-stick" id="stick-p2" style="background: rgba(255, 159, 67, 0.7); border-color: #ff9f43; box-shadow: 0 0 10px rgba(255, 159, 67, 0.5);"></div>
@@ -283,17 +282,17 @@
     <!-- MAIN MENU -->
     <div id="menu-screen" class="overlay">
         <h1>MAIBELLNETENLUA</h1>
-        <div class="subtitle">STICKMAN DUELIST STYLE - XOAY CẦU ĐIỀU HƯỚNG & KỸ NĂNG</div>
+        <div class="subtitle">TOP-DOWN 2D ARENA - XOAY CẦU DI CHUYỂN & MÚT SKILL THẢ CẦN</div>
 
-        <div class="section-title">CHỌN KĨ NĂNG P1</div>
+        <div class="section-title">CHỌN KĨ NĂNG CHÍNH (P1)</div>
         <div class="skill-selector-container">
             <div class="skill-card selected" onclick="selectSkill('p1', 'dash', this)">
                 <h4>⚡ QUANTUM DASH</h4>
-                <p>Thả cần: Tốc biến theo hướng chỉ định</p>
+                <p>Thả cần: Tốc biến lướt né đạn</p>
             </div>
             <div class="skill-card" onclick="selectSkill('p1', 'shockwave', this)">
                 <h4>💥 SHOCKWAVE</h4>
-                <p>Thả cần: Phát sóng đẩy lùi & phá tên lửa</p>
+                <p>Thả cần: Sóng đẩy lùi & phá tên lửa</p>
             </div>
             <div class="skill-card" onclick="selectSkill('p1', 'timewarp', this)">
                 <h4>⏳ TIME WARP</h4>
@@ -324,18 +323,16 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const W = canvas.width;
 const H = canvas.height;
-const GROUND_Y = H - 50;
 
 let gameMode = 'solo';
 let gameRunning = false;
 let score = 0;
-let highScore = parseInt(localStorage.getItem('maibellBest') || '0', 10);
 let frameCount = 0;
 let screenShake = 0;
 let players = [];
 let rockets = [];
 let particles = [];
-let stars = [];
+let powerups = [];
 let timeSlowTimer = 0;
 
 let p1SelectedSkill = 'dash';
@@ -350,32 +347,16 @@ function selectSkill(player, skill, el) {
     el.classList.add('selected');
 }
 
-for (let i = 0; i < 50; i++) {
-    stars.push({
-        x: Math.random() * W,
-        y: Math.random() * (GROUND_Y - 50),
-        r: Math.random() * 1.5 + 0.5,
-        alpha: Math.random() * 0.7 + 0.2
-    });
-}
-
-const platforms = [
-    { x: 140, y: GROUND_Y - 110, w: 170, h: 12 },
-    { x: W - 310, y: GROUND_Y - 110, w: 170, h: 12 },
-    { x: W / 2 - 110, y: GROUND_Y - 200, w: 220, h: 12 }
-];
-
 const joyState = {
     p1: { active: false, dirX: 0, dirY: 0, releaseTrigger: false },
     p2: { active: false, dirX: 0, dirY: 0, releaseTrigger: false }
 };
 
-class Stickman {
-    constructor(x, color, name, skillType, isAI = false, id = 'p1') {
+class PlayerOrb {
+    constructor(x, y, color, name, skillType, isAI = false, id = 'p1') {
         this.x = x;
-        this.y = GROUND_Y;
-        this.vx = 0;
-        this.vy = 0;
+        this.y = y;
+        this.radius = 16;
         this.color = color;
         this.name = name;
         this.skillType = skillType;
@@ -385,10 +366,12 @@ class Stickman {
         this.hp = 3;
         this.maxHp = 3;
         this.alive = true;
-        this.facing = 1;
         this.angle = 0;
         this.invincible = 0;
         this.skillCooldown = 0;
+        this.shield = false;
+        this.speedBoost = 0;
+
         this.lastDirX = 1;
         this.lastDirY = 0;
     }
@@ -398,6 +381,7 @@ class Stickman {
 
         if (this.invincible > 0) this.invincible--;
         if (this.skillCooldown > 0) this.skillCooldown--;
+        if (this.speedBoost > 0) this.speedBoost--;
 
         let inputX = 0, inputY = 0;
         let releaseSkill = false;
@@ -414,52 +398,38 @@ class Stickman {
             }
         }
 
-        // Supreme Stickman Physics: Direct Force movement in 2D Space
-        if (Math.hypot(inputX, inputY) > 0.15) {
-            this.vx = this.vx * 0.82 + inputX * 2.8;
-            this.vy = this.vy * 0.82 + inputY * 2.8;
+        const moveSpeed = this.speedBoost > 0 ? 7.2 : 4.8;
+
+        if (Math.hypot(inputX, inputY) > 0.1) {
+            this.x += inputX * moveSpeed;
+            this.y += inputY * moveSpeed;
             this.angle = Math.atan2(inputY, inputX);
-            this.facing = inputX >= 0 ? 1 : -1;
             this.lastDirX = inputX;
             this.lastDirY = inputY;
-        } else {
-            // Friction and gravity when not pushing joystick
-            this.vx *= 0.85;
-            this.vy += 0.45; // slight gravity force
+
+            // Đuôi hiệu ứng khi di chuyển
+            if (frameCount % 3 === 0) {
+                particles.push(new Particle(this.x, this.y, this.color, -inputX * 1.5, -inputY * 1.5, 12));
+            }
         }
 
-        // Execute Skill on Joystick Release!
+        // Kích hoạt skill khi thả cần
         if (releaseSkill && this.skillCooldown === 0) {
             this.useSkill();
         }
 
-        this.x += this.vx;
-        this.y += this.vy;
+        // Giới hạn trong sân đấu 2D
+        this.x = Math.max(this.radius, Math.min(W - this.radius, this.x));
+        this.y = Math.max(this.radius, Math.min(H - this.radius, this.y));
 
-        // Map Boundaries
-        if (this.x < 24) { this.x = 24; this.vx *= -0.5; }
-        if (this.x > W - 24) { this.x = W - 24; this.vx *= -0.5; }
-
-        // Platform bounce & surface landing
-        if (this.y >= GROUND_Y) {
-            this.y = GROUND_Y;
-            if (this.vy > 0) this.vy = -this.vy * 0.3; // Elastic bouncy feel like Stickman Duelist
-        }
-        for (const pf of platforms) {
-            if (this.x >= pf.x && this.x <= pf.x + pf.w && this.y >= pf.y - 10 && this.y <= pf.y + pf.h) {
-                this.y = pf.y - 10;
-                this.vy = -this.vy * 0.3;
-            }
-        }
-
-        // Update CD HUD
+        // Cập nhật CD HUD
         const cdEl = document.getElementById('cd-' + this.id);
         if (cdEl) {
             if (this.skillCooldown > 0) {
                 cdEl.textContent = `SKILL: ${(this.skillCooldown / 60).toFixed(1)}s`;
                 cdEl.style.color = '#ff4757';
             } else {
-                cdEl.textContent = 'THẢ CẦU DE MÚT SKILL!';
+                cdEl.textContent = 'THẢ CẦU MÚT SKILL!';
                 cdEl.style.color = '#2ed573';
             }
         }
@@ -472,22 +442,22 @@ class Stickman {
         const ny = this.lastDirY / len;
 
         if (this.skillType === 'dash') {
-            this.x += nx * 140;
-            this.y += ny * 140;
-            this.invincible = 35;
-            for (let i = 0; i < 15; i++) particles.push(new Particle(this.x, this.y - 20, '#00d2d3', (Math.random()-0.5)*9, (Math.random()-0.5)*9, 20));
+            this.x += nx * 150;
+            this.y += ny * 150;
+            this.invincible = 30;
+            for (let i = 0; i < 18; i++) particles.push(new Particle(this.x, this.y, '#00d2d3', (Math.random()-0.5)*10, (Math.random()-0.5)*10, 20));
         } else if (this.skillType === 'shockwave') {
             for (let r of rockets) {
                 if (Math.hypot(r.x - this.x, r.y - this.y) < 220) {
-                    r.vx = (r.x - this.x) * 0.15;
-                    r.vy = (r.y - this.y) * 0.15;
+                    r.vx = (r.x - this.x) * 0.18;
+                    r.vy = (r.y - this.y) * 0.18;
                 }
             }
             screenShake = 12;
-            for (let i = 0; i < 25; i++) particles.push(new Particle(this.x, this.y - 20, '#ffa502', (Math.random()-0.5)*12, (Math.random()-0.5)*12, 25));
+            for (let i = 0; i < 25; i++) particles.push(new Particle(this.x, this.y, '#ffa502', (Math.random()-0.5)*12, (Math.random()-0.5)*12, 25));
         } else if (this.skillType === 'timewarp') {
             timeSlowTimer = 240;
-            for (let i = 0; i < 20; i++) particles.push(new Particle(this.x, this.y - 20, '#ff4757', (Math.random()-0.5)*8, (Math.random()-0.5)*8, 30));
+            for (let i = 0; i < 20; i++) particles.push(new Particle(this.x, this.y, '#ff4757', (Math.random()-0.5)*8, (Math.random()-0.5)*8, 30));
         }
     }
 
@@ -498,12 +468,17 @@ class Stickman {
             const d = Math.hypot(r.x - this.x, r.y - this.y);
             if (d < minDist) { minDist = d; danger = r; }
         }
-        if (danger && minDist < 220) {
+
+        // Né tên lửa hoặc tìm ăn vật phẩm phụ trợ
+        if (danger && minDist < 200) {
             x = this.x - danger.x;
             y = this.y - danger.y;
-            if (minDist < 100 && Math.random() < 0.15) release = true;
+            if (minDist < 90 && Math.random() < 0.2) release = true;
+        } else if (powerups.length > 0) {
+            const pw = powerups[0];
+            x = pw.x - this.x; y = pw.y - this.y;
         } else {
-            x = (W / 2) - this.x; y = (GROUND_Y - 50) - this.y;
+            x = (W / 2) - this.x; y = (H / 2) - this.y;
         }
         const mag = Math.hypot(x, y) || 1;
         return { x: x / mag, y: y / mag, release };
@@ -511,11 +486,16 @@ class Stickman {
 
     takeDamage() {
         if (this.invincible > 0 || !this.alive) return;
+        if (this.shield) {
+            this.shield = false;
+            this.invincible = 50;
+            return;
+        }
         this.hp--;
         this.invincible = 70;
         screenShake = 12;
         updateHUD();
-        for (let i = 0; i < 20; i++) particles.push(new Particle(this.x, this.y - 20, this.color, (Math.random()-0.5)*9, (Math.random()-0.5)*9, 25));
+        for (let i = 0; i < 20; i++) particles.push(new Particle(this.x, this.y, this.color, (Math.random()-0.5)*10, (Math.random()-0.5)*10, 25));
         if (this.hp <= 0) { this.alive = false; checkGameOver(); }
     }
 
@@ -525,61 +505,78 @@ class Stickman {
 
         ctx.save();
         ctx.translate(this.x, this.y);
-        ctx.rotate(this.angle * 0.3); // Dynamic ragdoll physics rotation
 
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = 4.5;
-        ctx.lineCap = 'round';
+        // Giáp bảo vệ (Shield)
+        if (this.shield) {
+            ctx.beginPath();
+            ctx.arc(0, 0, this.radius + 8, 0, Math.PI * 2);
+            ctx.strokeStyle = '#00d2d3';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(0, 210, 211, 0.15)';
+            ctx.fill();
+        }
 
-        // Head
-        ctx.beginPath(); ctx.arc(0, -40, 8.5, 0, Math.PI * 2); ctx.stroke();
-        // Body
-        ctx.beginPath(); ctx.moveTo(0, -31); ctx.lineTo(0, -12); ctx.stroke();
-        // Limbs in Supreme Stickman stance
-        ctx.beginPath(); ctx.moveTo(0, -28); ctx.lineTo(-12 * this.facing, -18); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, -28); ctx.lineTo(14 * this.facing, -18); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(-10, 8); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(10, 8); ctx.stroke();
+        // Chấm tròn nhân vật (Orb)
+        ctx.beginPath();
+        ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
 
+        // Mũi tên chỉ hướng nhìn từ trên xuống
+        ctx.rotate(this.angle);
+        ctx.beginPath();
+        ctx.moveTo(this.radius - 2, -5);
+        ctx.lineTo(this.radius + 8, 0);
+        ctx.lineTo(this.radius - 2, 5);
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 10px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(this.name, 0, -54);
+        ctx.fill();
+
         ctx.restore();
+
+        // Tên nhân vật
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.name, this.x, this.y - this.radius - 8);
     }
 }
 
 class Rocket {
-    constructor(type) {
-        this.type = type;
-        const speedScale = (1 + Math.min(score / 1000, 1.2)) * (timeSlowTimer > 0 ? 0.4 : 1);
-        if (type === 'vertical') {
-            this.x = 40 + Math.random() * (W - 80);
-            this.y = -30;
-            this.vx = (Math.random() - 0.5) * 1.5;
-            this.vy = (4.5 + Math.random() * 2) * speedScale;
-            this.warningTimer = 25;
-        } else {
-            const fromLeft = Math.random() < 0.5;
-            this.x = fromLeft ? -30 : W + 30;
-            this.y = GROUND_Y - 40;
-            this.vx = (fromLeft ? 1 : -1) * (5.5 + Math.random() * 2) * speedScale;
-            this.vy = 0;
-            this.warningTimer = 30;
-        }
+    constructor() {
+        // Tên lửa bay từ 4 phía viền màn hình vào
+        const side = Math.floor(Math.random() * 4);
+        if (side === 0) { this.x = Math.random() * W; this.y = -20; } // Top
+        else if (side === 1) { this.x = W + 20; this.y = Math.random() * H; } // Right
+        else if (side === 2) { this.x = Math.random() * W; this.y = H + 20; } // Bottom
+        else { this.x = -20; this.y = Math.random() * H; } // Left
+
+        // Hướng bắn nhắm vào giữa hoặc player
+        const targetX = W / 4 + Math.random() * (W / 2);
+        const targetY = H / 4 + Math.random() * (H / 2);
+        const angle = Math.atan2(targetY - this.y, targetX - this.x);
+
+        const spd = (3.8 + Math.random() * 2) * (1 + Math.min(score / 1000, 1.2));
+        this.vx = Math.cos(angle) * spd;
+        this.vy = Math.sin(angle) * spd;
+        this.radius = 8;
     }
 
     update() {
-        if (this.warningTimer > 0) { this.warningTimer--; return true; }
-        const spd = timeSlowTimer > 0 ? 0.4 : 1;
-        this.x += this.vx * spd;
-        this.y += this.vy * spd;
+        const spdMult = timeSlowTimer > 0 ? 0.4 : 1;
+        this.x += this.vx * spdMult;
+        this.y += this.vy * spdMult;
 
-        if (this.y >= GROUND_Y || this.x < -60 || this.x > W + 60) return false;
+        // Xóa tên lửa khi bay ra xa khỏi map
+        if (this.x < -60 || this.x > W + 60 || this.y < -60 || this.y > H + 60) return false;
 
+        // Va chạm người chơi
         for (const p of players) {
             if (!p.alive) continue;
-            if (Math.hypot(p.x - this.x, (p.y - 20) - this.y) < 22) {
+            if (Math.hypot(p.x - this.x, p.y - this.y) < p.radius + this.radius) {
                 p.takeDamage();
                 return false;
             }
@@ -588,19 +585,75 @@ class Rocket {
     }
 
     draw() {
-        if (this.warningTimer > 0) {
-            ctx.strokeStyle = 'rgba(255, 71, 87, 0.5)';
-            ctx.setLineDash([4, 4]); ctx.beginPath();
-            if (this.type === 'horizontal') { ctx.moveTo(0, this.y); ctx.lineTo(W, this.y); }
-            else { ctx.moveTo(this.x, 0); ctx.lineTo(this.x, GROUND_Y); }
-            ctx.stroke(); ctx.setLineDash([]);
-            return;
-        }
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(Math.atan2(this.vy, this.vx));
+
+        // Đầu đạn
         ctx.fillStyle = '#ff4757';
-        ctx.beginPath(); ctx.roundRect(-12, -4, 20, 8, 3); ctx.fill();
+        ctx.beginPath();
+        ctx.roundRect(-10, -4, 18, 8, 3);
+        ctx.fill();
+
+        // Đuôi lửa
+        ctx.fillStyle = '#ffa502';
+        ctx.beginPath();
+        ctx.moveTo(-10, -2);
+        ctx.lineTo(-16 - Math.random() * 4, 0);
+        ctx.lineTo(-10, 2);
+        ctx.fill();
+
+        ctx.restore();
+    }
+}
+
+// VẬT PHẨM PHỤ TRỢ TRÊN MAP (Power-ups)
+class PowerUp {
+    constructor() {
+        this.x = 60 + Math.random() * (W - 120);
+        this.y = 60 + Math.random() * (H - 120);
+        const rand = Math.random();
+        if (rand < 0.4) this.type = 'shield';      // Giáp
+        else if (rand < 0.7) this.type = 'speed';  // Tăng tốc
+        else this.type = 'heal';                   // Hồi máu
+
+        this.life = 400;
+    }
+
+    update() {
+        this.life--;
+        for (const p of players) {
+            if (!p.alive) continue;
+            if (Math.hypot(p.x - this.x, p.y - this.y) < p.radius + 14) {
+                if (this.type === 'shield') p.shield = true;
+                else if (this.type === 'speed') p.speedBoost = 250;
+                else if (this.type === 'heal' && p.hp < p.maxHp) p.hp++;
+                
+                updateHUD();
+                return false;
+            }
+        }
+        return this.life > 0;
+    }
+
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y + Math.sin(frameCount * 0.1) * 3);
+        ctx.beginPath();
+        ctx.arc(0, 0, 14, 0, Math.PI * 2);
+
+        let icon = '🛡️';
+        if (this.type === 'shield') { ctx.fillStyle = 'rgba(0, 210, 211, 0.3)'; ctx.strokeStyle = '#00d2d3'; icon = '🛡️'; }
+        else if (this.type === 'speed') { ctx.fillStyle = 'rgba(46, 213, 115, 0.3)'; ctx.strokeStyle = '#2ed573'; icon = '⚡'; }
+        else { ctx.fillStyle = 'rgba(255, 71, 87, 0.3)'; ctx.strokeStyle = '#ff4757'; icon = '💚'; }
+
+        ctx.fill(); ctx.lineWidth = 2; ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(icon, 0, 1);
         ctx.restore();
     }
 }
@@ -658,7 +711,7 @@ function setupJoystick(containerId, stickId, playerKey) {
     window.addEventListener('touchend', e => {
         if (joyState[playerKey].active) {
             joyState[playerKey].active = false;
-            joyState[playerKey].releaseTrigger = true; // Trigger skill on release!
+            joyState[playerKey].releaseTrigger = true; // Kích hoạt skill khi thả cần
             stick.style.transform = `translate(0px, 0px)`;
             joyState[playerKey].dirX = 0;
             joyState[playerKey].dirY = 0;
@@ -685,15 +738,15 @@ setupJoystick('joystick-p2', 'stick-p2', 'p2');
 function startGame(mode) {
     gameMode = mode;
     score = 0; frameCount = 0;
-    rockets = []; particles = []; players = []; timeSlowTimer = 0;
+    rockets = []; particles = []; powerups = []; players = []; timeSlowTimer = 0;
 
     if (mode === 'solo' || mode === 'ai') {
-        players.push(new Stickman(W * 0.4, '#00d2d3', 'P1', p1SelectedSkill, false, 'p1'));
-        if (mode === 'ai') players.push(new Stickman(W * 0.6, '#ff9f43', 'AI', 'shockwave', true, 'p2'));
+        players.push(new PlayerOrb(W * 0.4, H / 2, '#00d2d3', 'P1', p1SelectedSkill, false, 'p1'));
+        if (mode === 'ai') players.push(new PlayerOrb(W * 0.6, H / 2, '#ff9f43', 'AI', 'shockwave', true, 'p2'));
         document.getElementById('joystick-p2').classList.add('hidden');
     } else if (mode === 'pvp') {
-        players.push(new Stickman(W * 0.35, '#00d2d3', 'P1', p1SelectedSkill, false, 'p1'));
-        players.push(new Stickman(W * 0.65, '#ff9f43', 'P2', p2SelectedSkill, false, 'p2'));
+        players.push(new PlayerOrb(W * 0.35, H / 2, '#00d2d3', 'P1', p1SelectedSkill, false, 'p1'));
+        players.push(new PlayerOrb(W * 0.65, H / 2, '#ff9f43', 'P2', p2SelectedSkill, false, 'p2'));
         document.getElementById('joystick-p2').classList.remove('hidden');
     }
 
@@ -727,31 +780,33 @@ function checkGameOver() {
 function gameLoop() {
     requestAnimationFrame(gameLoop);
 
-    ctx.fillStyle = '#0b0e17'; ctx.fillRect(0, 0, W, H);
-    for (const s of stars) {
-        ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
-        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
-    }
-    for (const pf of platforms) {
-        ctx.fillStyle = '#2f3542'; ctx.beginPath(); ctx.roundRect(pf.x, pf.y, pf.w, pf.h, 4); ctx.fill();
-    }
-    ctx.fillStyle = '#1e222d'; ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
-    ctx.strokeStyle = '#ff4757'; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(W, GROUND_Y); ctx.stroke();
+    // Màn chơi Top-Down với lưới Grid hiện đại
+    ctx.fillStyle = '#101420'; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)'; ctx.lineWidth = 1;
+    for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
 
     if (gameRunning) {
         frameCount++; score += 0.25;
         if (timeSlowTimer > 0) timeSlowTimer--;
         if (frameCount % 10 === 0) updateHUD();
 
-        const spawnInt = Math.max(20, Math.floor(50 - score / 35));
-        if (frameCount % spawnInt === 0) rockets.push(new Rocket(Math.random() < 0.7 ? 'vertical' : 'horizontal'));
+        // Sinh tên lửa
+        const spawnInt = Math.max(18, Math.floor(45 - score / 35));
+        if (frameCount % spawnInt === 0) rockets.push(new Rocket());
+
+        // Sinh vật phẩm hỗ trợ (Giáp, Tăng tốc, Hồi máu)
+        if (frameCount % 360 === 0 && powerups.length < 3) {
+            powerups.push(new PowerUp());
+        }
 
         for (const p of players) p.update();
         rockets = rockets.filter(r => r.update());
+        powerups = powerups.filter(pw => pw.update());
         particles = particles.filter(pt => pt.update());
     }
 
+    for (const pw of powerups) pw.draw();
     for (const p of players) p.draw();
     for (const r of rockets) r.draw();
     for (const pt of particles) pt.draw();
