@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Người Que Tránh Tên Lửa - Mobile Edition</title>
+    <title>maibellnetenlua</title>
     <style>
         * {
             box-sizing: border-box;
@@ -46,45 +46,86 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(11, 14, 23, 0.9);
+            background: rgba(11, 14, 23, 0.92);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 20;
             padding: 20px;
+            overflow-y: auto;
         }
         .hidden {
             display: none !important;
         }
         h1 {
-            font-size: clamp(28px, 6vw, 46px);
+            font-size: clamp(30px, 6vw, 48px);
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 2px;
             color: #ff4757;
             text-shadow: 0 0 15px rgba(255, 71, 87, 0.7);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             text-align: center;
         }
         .subtitle {
-            font-size: clamp(12px, 3vw, 16px);
+            font-size: clamp(12px, 3vw, 15px);
             color: #a4b0be;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             letter-spacing: 1px;
             text-align: center;
         }
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #00d2d3;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .skill-selector-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 500px;
+            justify-content: center;
+        }
+        .skill-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 10px;
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .skill-card.selected {
+            border-color: #ffa502;
+            background: rgba(255, 165, 2, 0.2);
+            box-shadow: 0 0 10px rgba(255, 165, 2, 0.4);
+        }
+        .skill-card h4 {
+            font-size: 13px;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+        .skill-card p {
+            font-size: 11px;
+            color: #a4b0be;
+        }
+
         .btn-group {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             width: 100%;
-            max-width: 300px;
-            margin-bottom: 20px;
+            max-width: 320px;
+            margin-bottom: 15px;
         }
         .btn {
-            padding: 14px 20px;
-            font-size: 16px;
+            padding: 12px 20px;
+            font-size: 15px;
             font-weight: 700;
             color: #fff;
             background: linear-gradient(135deg, #ff4757, #ff6b81);
@@ -102,6 +143,7 @@
             background: linear-gradient(135deg, #2ed573, #1eae60);
             box-shadow: 0 4px 0 #166d3b;
         }
+
         #hud {
             position: absolute;
             top: 10px;
@@ -114,10 +156,10 @@
             z-index: 10;
         }
         .hud-box {
-            background: rgba(15, 20, 32, 0.8);
+            background: rgba(15, 20, 32, 0.85);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            padding: 6px 10px;
-            border-radius: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
             font-size: 12px;
         }
         .hud-center {
@@ -125,7 +167,7 @@
             background: rgba(15, 20, 32, 0.9);
             border: 1px solid rgba(255, 71, 87, 0.4);
             padding: 6px 14px;
-            border-radius: 6px;
+            border-radius: 8px;
         }
         .score-big {
             font-size: 18px;
@@ -147,78 +189,56 @@
             background: #2f3542;
         }
 
-        /* VIRTUAL TOUCH CONTROLS & SKILLS */
+        /* VIRTUAL JOYSTICKS (SUPREME STICKMAN DUELIST STYLE) */
         #touch-controls {
             position: absolute;
-            bottom: 10px;
+            bottom: 20px;
             left: 0;
             width: 100%;
-            height: 140px;
+            height: 160px;
             pointer-events: none;
             z-index: 15;
             display: flex;
             justify-content: space-between;
-            padding: 0 15px;
+            padding: 0 20px;
         }
-        .touch-group {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            pointer-events: auto;
-        }
-        /* Virtual Circles / Joysticks & Buttons */
-        .v-circle {
-            width: 75px;
-            height: 75px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.12);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: white;
-            touch-action: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        .v-circle:active, .v-circle.pressed {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(0.95);
-        }
-        .skill-btn {
-            background: linear-gradient(135deg, #ffa502, #ff7f50);
-            border-color: #ff6348;
-        }
-        .skill-btn.cooldown {
-            opacity: 0.5;
-            filter: grayscale(0.7);
-        }
-        .dpad-container {
+        .joy-container {
             position: relative;
             width: 130px;
-            height: 110px;
+            height: 130px;
             pointer-events: auto;
         }
         .joy-base {
             position: absolute;
-            width: 110px;
-            height: 110px;
+            width: 130px;
+            height: 130px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.25);
-            left: 10px;
-            top: 0;
+            background: rgba(255, 255, 255, 0.12);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            top: 0; left: 0;
         }
         .joy-stick {
             position: absolute;
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
-            background: rgba(0, 210, 211, 0.6);
+            background: rgba(0, 210, 211, 0.7);
             border: 2px solid #00d2d3;
-            left: 40px;
-            top: 30px;
+            left: 37.5px;
+            top: 37.5px;
             touch-action: none;
+            box-shadow: 0 0 10px rgba(0, 210, 211, 0.5);
+        }
+        .cd-indicator {
+            position: absolute;
+            bottom: -22px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #ffa502;
         }
     </style>
 </head>
@@ -245,39 +265,46 @@
 
     <!-- TOUCH CONTROLS OVERLAY -->
     <div id="touch-controls" class="hidden">
-        <!-- Left Side Control (P1 or Solo) -->
-        <div class="touch-group" id="group-p1">
-            <div class="dpad-container" id="joystick-p1">
-                <div class="joy-base"></div>
-                <div class="joy-stick" id="stick-p1"></div>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-                <div class="v-circle" id="btn-jump-p1" ontouchstart="handleTouchAction('p1', 'jump', true)" ontouchend="handleTouchAction('p1', 'jump', false)">⬆️</div>
-                <div class="v-circle skill-btn" id="btn-skill-p1" ontouchstart="handleTouchAction('p1', 'skill', true)" ontouchend="handleTouchAction('p1', 'skill', false)">⚡</div>
-            </div>
+        <!-- P1 Joystick -->
+        <div class="joy-container" id="joystick-p1">
+            <div class="joy-base"></div>
+            <div class="joy-stick" id="stick-p1"></div>
+            <div class="cd-indicator" id="cd-p1">SKILL: SẴN SÀNG</div>
         </div>
 
-        <!-- Right Side Control (P2 in 2P Mode) -->
-        <div class="touch-group hidden" id="group-p2">
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-                <div class="v-circle" id="btn-jump-p2" ontouchstart="handleTouchAction('p2', 'jump', true)" ontouchend="handleTouchAction('p2', 'jump', false)">⬆️</div>
-                <div class="v-circle skill-btn" id="btn-skill-p2" ontouchstart="handleTouchAction('p2', 'skill', true)" ontouchend="handleTouchAction('p2', 'skill', false)">⚡</div>
-            </div>
-            <div class="dpad-container" id="joystick-p2">
-                <div class="joy-base"></div>
-                <div class="joy-stick" id="stick-p2" style="background: rgba(255, 159, 67, 0.6); border-color: #ff9f43;"></div>
-            </div>
+        <!-- P2 Joystick (2P Mode) -->
+        <div class="joy-container hidden" id="joystick-p2">
+            <div class="joy-base"></div>
+            <div class="joy-stick" id="stick-p2" style="background: rgba(255, 159, 67, 0.7); border-color: #ff9f43; box-shadow: 0 0 10px rgba(255, 159, 67, 0.5);"></div>
+            <div class="cd-indicator" id="cd-p2">SKILL: SẴN SÀNG</div>
         </div>
     </div>
 
     <!-- MAIN MENU -->
     <div id="menu-screen" class="overlay">
-        <h1>ROCKET STRIKE</h1>
-        <div class="subtitle">MOBILE EDITION + KỸ NĂNG ĐẶC BIỆT</div>
+        <h1>MAIBELLNETENLUA</h1>
+        <div class="subtitle">STICKMAN DUELIST STYLE - XOAY CẦU ĐIỀU HƯỚNG & KỸ NĂNG</div>
+
+        <div class="section-title">CHỌN KĨ NĂNG P1</div>
+        <div class="skill-selector-container">
+            <div class="skill-card selected" onclick="selectSkill('p1', 'dash', this)">
+                <h4>⚡ QUANTUM DASH</h4>
+                <p>Thả cần: Tốc biến theo hướng chỉ định</p>
+            </div>
+            <div class="skill-card" onclick="selectSkill('p1', 'shockwave', this)">
+                <h4>💥 SHOCKWAVE</h4>
+                <p>Thả cần: Phát sóng đẩy lùi & phá tên lửa</p>
+            </div>
+            <div class="skill-card" onclick="selectSkill('p1', 'timewarp', this)">
+                <h4>⏳ TIME WARP</h4>
+                <p>Thả cần: Ngưng đọng thời gian 4 giây</p>
+            </div>
+        </div>
+
         <div class="btn-group">
             <button class="btn" onclick="startGame('solo')">1 NGƯỜI (SINH TỒN)</button>
             <button class="btn secondary" onclick="startGame('ai')">ĐẤU VỚI MÁY (VS AI)</button>
-            <button class="btn tertiary" onclick="startGame('pvp')">2 NGƯỜI CHƠI (2 CIRCLES)</button>
+            <button class="btn tertiary" onclick="startGame('pvp')">2 NGƯỜI CHƠI (2 JOYSTICKS)</button>
         </div>
     </div>
 
@@ -297,20 +324,31 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const W = canvas.width;
 const H = canvas.height;
-const GROUND_Y = H - 54;
+const GROUND_Y = H - 50;
 
 let gameMode = 'solo';
 let gameRunning = false;
 let score = 0;
-let highScore = parseInt(localStorage.getItem('rocketStrikeBest') || '0', 10);
+let highScore = parseInt(localStorage.getItem('maibellBest') || '0', 10);
 let frameCount = 0;
 let screenShake = 0;
 let players = [];
 let rockets = [];
 let particles = [];
-let powerups = [];
 let stars = [];
 let timeSlowTimer = 0;
+
+let p1SelectedSkill = 'dash';
+let p2SelectedSkill = 'shockwave';
+
+function selectSkill(player, skill, el) {
+    if (player === 'p1') p1SelectedSkill = skill;
+    else p2SelectedSkill = skill;
+    
+    const parent = el.parentElement;
+    for (let child of parent.children) child.classList.remove('selected');
+    el.classList.add('selected');
+}
 
 for (let i = 0; i < 50; i++) {
     stars.push({
@@ -327,20 +365,20 @@ const platforms = [
     { x: W / 2 - 110, y: GROUND_Y - 200, w: 220, h: 12 }
 ];
 
-// Touch State for virtual joysticks & buttons
-const touchState = {
-    p1: { moveX: 0, jump: false, skill: false },
-    p2: { moveX: 0, jump: false, skill: false }
+const joyState = {
+    p1: { active: false, dirX: 0, dirY: 0, releaseTrigger: false },
+    p2: { active: false, dirX: 0, dirY: 0, releaseTrigger: false }
 };
 
 class Stickman {
-    constructor(x, color, name, isAI = false, id = 'p1') {
+    constructor(x, color, name, skillType, isAI = false, id = 'p1') {
         this.x = x;
         this.y = GROUND_Y;
         this.vx = 0;
         this.vy = 0;
         this.color = color;
         this.name = name;
+        this.skillType = skillType;
         this.isAI = isAI;
         this.id = id;
 
@@ -348,154 +386,137 @@ class Stickman {
         this.maxHp = 3;
         this.alive = true;
         this.facing = 1;
-        this.animPhase = 0;
-        this.jumpsLeft = 2;
-        this.jumpKeyHold = false;
+        this.angle = 0;
         this.invincible = 0;
-        this.shield = false;
-        this.speedBoost = 0;
         this.skillCooldown = 0;
+        this.lastDirX = 1;
+        this.lastDirY = 0;
     }
-
-    getHeight() { return 54; }
 
     update() {
         if (!this.alive) return;
 
         if (this.invincible > 0) this.invincible--;
-        if (this.speedBoost > 0) this.speedBoost--;
         if (this.skillCooldown > 0) this.skillCooldown--;
 
-        const moveSpeed = this.speedBoost > 0 ? 7.5 : 5.0;
-        let moveDir = 0;
-        let wantJump = false;
-        let wantSkill = false;
+        let inputX = 0, inputY = 0;
+        let releaseSkill = false;
 
         if (this.isAI) {
             const ai = this.computeAI();
-            moveDir = ai.dir;
-            wantJump = ai.jump;
-            if (ai.skill && this.skillCooldown === 0) this.useSkill();
+            inputX = ai.x; inputY = ai.y; releaseSkill = ai.release;
         } else {
-            const t = touchState[this.id];
-            moveDir = t.moveX;
-            wantJump = t.jump;
-            if (t.skill && this.skillCooldown === 0) {
-                this.useSkill();
-                t.skill = false; // consume trigger
+            const st = joyState[this.id];
+            inputX = st.dirX; inputY = st.dirY;
+            if (st.releaseTrigger) {
+                releaseSkill = true;
+                st.releaseTrigger = false;
             }
         }
 
-        this.vx = moveDir * moveSpeed;
-        if (moveDir !== 0) {
-            this.facing = moveDir > 0 ? 1 : -1;
-            this.animPhase += 0.28;
+        // Supreme Stickman Physics: Direct Force movement in 2D Space
+        if (Math.hypot(inputX, inputY) > 0.15) {
+            this.vx = this.vx * 0.82 + inputX * 2.8;
+            this.vy = this.vy * 0.82 + inputY * 2.8;
+            this.angle = Math.atan2(inputY, inputX);
+            this.facing = inputX >= 0 ? 1 : -1;
+            this.lastDirX = inputX;
+            this.lastDirY = inputY;
         } else {
-            this.vx *= 0.75;
-            this.animPhase += 0.05;
+            // Friction and gravity when not pushing joystick
+            this.vx *= 0.85;
+            this.vy += 0.45; // slight gravity force
         }
 
-        // Jump & Double Jump
-        if (wantJump && !this.jumpKeyHold && this.jumpsLeft > 0) {
-            this.vy = -12.5;
-            this.jumpsLeft--;
-            this.jumpKeyHold = true;
-            for (let i = 0; i < 5; i++) {
-                particles.push(new Particle(this.x, this.y, this.color, (Math.random()-0.5)*4, Math.random()*2, 14));
-            }
+        // Execute Skill on Joystick Release!
+        if (releaseSkill && this.skillCooldown === 0) {
+            this.useSkill();
         }
-        if (!wantJump) this.jumpKeyHold = false;
 
-        // Gravity
-        const prevY = this.y;
-        this.vy += 0.58;
         this.x += this.vx;
         this.y += this.vy;
 
-        if (this.x < 24) this.x = 24;
-        if (this.x > W - 24) this.x = W - 24;
+        // Map Boundaries
+        if (this.x < 24) { this.x = 24; this.vx *= -0.5; }
+        if (this.x > W - 24) { this.x = W - 24; this.vx *= -0.5; }
 
-        // Platform collision
-        if (this.vy > 0) {
-            for (const pf of platforms) {
-                if (this.x >= pf.x && this.x <= pf.x + pf.w && prevY <= pf.y && this.y >= pf.y) {
-                    this.y = pf.y;
-                    this.vy = 0;
-                    this.jumpsLeft = 2;
-                }
+        // Platform bounce & surface landing
+        if (this.y >= GROUND_Y) {
+            this.y = GROUND_Y;
+            if (this.vy > 0) this.vy = -this.vy * 0.3; // Elastic bouncy feel like Stickman Duelist
+        }
+        for (const pf of platforms) {
+            if (this.x >= pf.x && this.x <= pf.x + pf.w && this.y >= pf.y - 10 && this.y <= pf.y + pf.h) {
+                this.y = pf.y - 10;
+                this.vy = -this.vy * 0.3;
             }
         }
 
-        if (this.y >= GROUND_Y) {
-            this.y = GROUND_Y;
-            this.vy = 0;
-            this.jumpsLeft = 2;
+        // Update CD HUD
+        const cdEl = document.getElementById('cd-' + this.id);
+        if (cdEl) {
+            if (this.skillCooldown > 0) {
+                cdEl.textContent = `SKILL: ${(this.skillCooldown / 60).toFixed(1)}s`;
+                cdEl.style.color = '#ff4757';
+            } else {
+                cdEl.textContent = 'THẢ CẦU DE MÚT SKILL!';
+                cdEl.style.color = '#2ed573';
+            }
         }
     }
 
     useSkill() {
-        this.skillCooldown = 300; // 5 seconds at 60fps
-        // INTERESTING SKILL: Quantum Dash / Shockwave / Time Warp
-        const skillType = Math.random();
-        if (skillType < 0.35) {
-            // Skill 1: Quantum Dash (Teleport forward)
-            this.x += this.facing * 120;
-            this.invincible = 40;
-            for (let i = 0; i < 12; i++) particles.push(new Particle(this.x, this.y - 25, '#00d2d3', (Math.random()-0.5)*8, (Math.random()-0.5)*8, 20));
-        } else if (skillType < 0.7) {
-            // Skill 2: Shockwave (Destroy / push back nearby rockets)
+        this.skillCooldown = 240; // 4s cooldown
+        const len = Math.hypot(this.lastDirX, this.lastDirY) || 1;
+        const nx = this.lastDirX / len;
+        const ny = this.lastDirY / len;
+
+        if (this.skillType === 'dash') {
+            this.x += nx * 140;
+            this.y += ny * 140;
+            this.invincible = 35;
+            for (let i = 0; i < 15; i++) particles.push(new Particle(this.x, this.y - 20, '#00d2d3', (Math.random()-0.5)*9, (Math.random()-0.5)*9, 20));
+        } else if (this.skillType === 'shockwave') {
             for (let r of rockets) {
-                if (Math.hypot(r.x - this.x, r.y - this.y) < 180) {
-                    r.vx *= -1.5;
-                    r.vy *= -1.5;
+                if (Math.hypot(r.x - this.x, r.y - this.y) < 220) {
+                    r.vx = (r.x - this.x) * 0.15;
+                    r.vy = (r.y - this.y) * 0.15;
                 }
             }
-            screenShake = 10;
-            for (let i = 0; i < 20; i++) particles.push(new Particle(this.x, this.y - 25, '#ffa502', (Math.random()-0.5)*10, (Math.random()-0.5)*10, 25));
-        } else {
-            // Skill 3: Time Warp (Slow down all rockets for 4 seconds)
+            screenShake = 12;
+            for (let i = 0; i < 25; i++) particles.push(new Particle(this.x, this.y - 20, '#ffa502', (Math.random()-0.5)*12, (Math.random()-0.5)*12, 25));
+        } else if (this.skillType === 'timewarp') {
             timeSlowTimer = 240;
-            for (let i = 0; i < 15; i++) particles.push(new Particle(this.x, this.y - 25, '#ff4757', (Math.random()-0.5)*6, (Math.random()-0.5)*6, 30));
+            for (let i = 0; i < 20; i++) particles.push(new Particle(this.x, this.y - 20, '#ff4757', (Math.random()-0.5)*8, (Math.random()-0.5)*8, 30));
         }
     }
 
     computeAI() {
-        let dir = 0, jump = false, skill = false;
+        let x = 0, y = 0, release = false;
         let danger = null, minDist = 9999;
         for (const r of rockets) {
             const d = Math.hypot(r.x - this.x, r.y - this.y);
             if (d < minDist) { minDist = d; danger = r; }
         }
-        if (danger && minDist < 200) {
-            if (danger.x > this.x) dir = -1; else dir = 1;
-            if (minDist < 90 && Math.random() < 0.4) jump = true;
-            if (minDist < 70 && Math.random() < 0.1) skill = true;
+        if (danger && minDist < 220) {
+            x = this.x - danger.x;
+            y = this.y - danger.y;
+            if (minDist < 100 && Math.random() < 0.15) release = true;
         } else {
-            if (this.x < W * 0.4) dir = 1;
-            else if (this.x > W * 0.6) dir = -1;
+            x = (W / 2) - this.x; y = (GROUND_Y - 50) - this.y;
         }
-        return { dir, jump, skill };
+        const mag = Math.hypot(x, y) || 1;
+        return { x: x / mag, y: y / mag, release };
     }
 
     takeDamage() {
         if (this.invincible > 0 || !this.alive) return;
-        if (this.shield) {
-            this.shield = false;
-            this.invincible = 50;
-            return;
-        }
         this.hp--;
-        this.invincible = 75;
+        this.invincible = 70;
         screenShake = 12;
         updateHUD();
-
-        for (let i = 0; i < 18; i++) {
-            particles.push(new Particle(this.x, this.y - 25, this.color, (Math.random()-0.5)*8, (Math.random()-0.5)*8, 24));
-        }
-        if (this.hp <= 0) {
-            this.alive = false;
-            checkGameOver();
-        }
+        for (let i = 0; i < 20; i++) particles.push(new Particle(this.x, this.y - 20, this.color, (Math.random()-0.5)*9, (Math.random()-0.5)*9, 25));
+        if (this.hp <= 0) { this.alive = false; checkGameOver(); }
     }
 
     draw() {
@@ -504,24 +525,26 @@ class Stickman {
 
         ctx.save();
         ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle * 0.3); // Dynamic ragdoll physics rotation
+
         ctx.strokeStyle = this.color;
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 4.5;
         ctx.lineCap = 'round';
 
-        const swing = Math.abs(this.vx) > 0.5 ? Math.sin(this.animPhase) * 10 : 0;
         // Head
-        ctx.beginPath(); ctx.arc(0, -45, 8, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, -40, 8.5, 0, Math.PI * 2); ctx.stroke();
         // Body
-        ctx.beginPath(); ctx.moveTo(0, -37); ctx.lineTo(0, -18); ctx.stroke();
-        // Arms
-        ctx.beginPath(); ctx.moveTo(0, -32); ctx.lineTo(swing, -20); ctx.moveTo(0, -32); ctx.lineTo(-swing, -20); ctx.stroke();
-        // Legs
-        ctx.beginPath(); ctx.moveTo(0, -18); ctx.lineTo(swing, 0); ctx.moveTo(0, -18); ctx.lineTo(-swing, 0); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, -31); ctx.lineTo(0, -12); ctx.stroke();
+        // Limbs in Supreme Stickman stance
+        ctx.beginPath(); ctx.moveTo(0, -28); ctx.lineTo(-12 * this.facing, -18); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, -28); ctx.lineTo(14 * this.facing, -18); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(-10, 8); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(10, 8); ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 10px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(this.name, 0, -58);
+        ctx.fillText(this.name, 0, -54);
         ctx.restore();
     }
 }
@@ -529,18 +552,17 @@ class Stickman {
 class Rocket {
     constructor(type) {
         this.type = type;
-        const speedScale = (1 + Math.min(score / 1000, 1.2)) * (timeSlowTimer > 0 ? 0.5 : 1);
-
+        const speedScale = (1 + Math.min(score / 1000, 1.2)) * (timeSlowTimer > 0 ? 0.4 : 1);
         if (type === 'vertical') {
             this.x = 40 + Math.random() * (W - 80);
             this.y = -30;
-            this.vx = (Math.random() - 0.5) * 1.2;
+            this.vx = (Math.random() - 0.5) * 1.5;
             this.vy = (4.5 + Math.random() * 2) * speedScale;
             this.warningTimer = 25;
         } else {
             const fromLeft = Math.random() < 0.5;
             this.x = fromLeft ? -30 : W + 30;
-            this.y = GROUND_Y - 35;
+            this.y = GROUND_Y - 40;
             this.vx = (fromLeft ? 1 : -1) * (5.5 + Math.random() * 2) * speedScale;
             this.vy = 0;
             this.warningTimer = 30;
@@ -548,19 +570,16 @@ class Rocket {
     }
 
     update() {
-        if (this.warningTimer > 0) {
-            this.warningTimer--;
-            return true;
-        }
-        const speedMult = timeSlowTimer > 0 ? 0.5 : 1;
-        this.x += this.vx * speedMult;
-        this.y += this.vy * speedMult;
+        if (this.warningTimer > 0) { this.warningTimer--; return true; }
+        const spd = timeSlowTimer > 0 ? 0.4 : 1;
+        this.x += this.vx * spd;
+        this.y += this.vy * spd;
 
         if (this.y >= GROUND_Y || this.x < -60 || this.x > W + 60) return false;
 
         for (const p of players) {
             if (!p.alive) continue;
-            if (Math.hypot(p.x - this.x, (p.y - 25) - this.y) < 22) {
+            if (Math.hypot(p.x - this.x, (p.y - 20) - this.y) < 22) {
                 p.takeDamage();
                 return false;
             }
@@ -571,12 +590,10 @@ class Rocket {
     draw() {
         if (this.warningTimer > 0) {
             ctx.strokeStyle = 'rgba(255, 71, 87, 0.5)';
-            ctx.setLineDash([4, 4]);
-            ctx.beginPath();
+            ctx.setLineDash([4, 4]); ctx.beginPath();
             if (this.type === 'horizontal') { ctx.moveTo(0, this.y); ctx.lineTo(W, this.y); }
             else { ctx.moveTo(this.x, 0); ctx.lineTo(this.x, GROUND_Y); }
-            ctx.stroke();
-            ctx.setLineDash([]);
+            ctx.stroke(); ctx.setLineDash([]);
             return;
         }
         ctx.save();
@@ -594,8 +611,7 @@ class Particle {
     }
     update() { this.x += this.vx; this.y += this.vy; this.life--; return this.life > 0; }
     draw() {
-        ctx.save();
-        ctx.globalAlpha = this.life / this.maxLife;
+        ctx.save(); ctx.globalAlpha = this.life / this.maxLife;
         ctx.fillStyle = this.color;
         ctx.beginPath(); ctx.arc(this.x, this.y, 2.5, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
@@ -604,8 +620,7 @@ class Particle {
 
 function updateHUD() {
     document.getElementById('score-val').textContent = Math.floor(score);
-    const p1Container = document.getElementById('p1-hp');
-    p1Container.innerHTML = '';
+    const p1Container = document.getElementById('p1-hp'); p1Container.innerHTML = '';
     if (players[0]) {
         for (let i = 0; i < players[0].maxHp; i++) {
             const d = document.createElement('div');
@@ -614,8 +629,7 @@ function updateHUD() {
         }
     }
     const p2Hud = document.getElementById('p2-hud');
-    const p2Container = document.getElementById('p2-hp');
-    p2Container.innerHTML = '';
+    const p2Container = document.getElementById('p2-hp'); p2Container.innerHTML = '';
     if (players.length > 1) {
         p2Hud.classList.remove('hidden');
         for (let i = 0; i < players[1].maxHp; i++) {
@@ -623,52 +637,45 @@ function updateHUD() {
             d.className = 'heart' + (i >= players[1].hp ? ' lost' : '');
             p2Container.appendChild(d);
         }
-    } else {
-        p2Hud.classList.add('hidden');
-    }
+    } else { p2Hud.classList.add('hidden'); }
 }
 
-function handleTouchAction(playerKey, action, isPressed) {
-    if (action === 'jump') touchState[playerKey].jump = isPressed;
-    if (action === 'skill' && isPressed) touchState[playerKey].skill = true;
-}
-
-// Setup Virtual Joysticks
 function setupJoystick(containerId, stickId, playerKey) {
     const container = document.getElementById(containerId);
     const stick = document.getElementById(stickId);
-    let active = false;
     let center = { x: 0, y: 0 };
 
     container.addEventListener('touchstart', e => {
-        active = true;
+        joyState[playerKey].active = true;
         const rect = container.getBoundingClientRect();
         center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
         handleMove(e.touches[0]);
     });
     window.addEventListener('touchmove', e => {
-        if (!active) return;
-        for (let t of e.touches) {
-            handleMove(t);
-        }
+        if (!joyState[playerKey].active) return;
+        for (let t of e.touches) handleMove(t);
     });
-    window.addEventListener('touchend', () => {
-        active = false;
-        stick.style.transform = `translate(0px, 0px)`;
-        touchState[playerKey].moveX = 0;
+    window.addEventListener('touchend', e => {
+        if (joyState[playerKey].active) {
+            joyState[playerKey].active = false;
+            joyState[playerKey].releaseTrigger = true; // Trigger skill on release!
+            stick.style.transform = `translate(0px, 0px)`;
+            joyState[playerKey].dirX = 0;
+            joyState[playerKey].dirY = 0;
+        }
     });
 
     function handleMove(touch) {
         const dx = touch.clientX - center.x;
-        const dist = Math.min(Math.abs(dx), 45);
-        const angle = dx > 0 ? 1 : -1;
-        if (Math.abs(dx) > 5) {
-            touchState[playerKey].moveX = angle * (dist / 45);
-            stick.style.transform = `translate(${dist * angle}px, 0px)`;
-        } else {
-            touchState[playerKey].moveX = 0;
-            stick.style.transform = `translate(0px, 0px)`;
-        }
+        const dy = touch.clientY - center.y;
+        const dist = Math.hypot(dx, dy);
+        const maxR = 40;
+        const angle = Math.atan2(dy, dx);
+        const clampedR = Math.min(dist, maxR);
+        
+        joyState[playerKey].dirX = Math.cos(angle) * (clampedR / maxR);
+        joyState[playerKey].dirY = Math.sin(angle) * (clampedR / maxR);
+        stick.style.transform = `translate(${Math.cos(angle) * clampedR}px, ${Math.sin(angle) * clampedR}px)`;
     }
 }
 
@@ -677,22 +684,17 @@ setupJoystick('joystick-p2', 'stick-p2', 'p2');
 
 function startGame(mode) {
     gameMode = mode;
-    score = 0;
-    frameCount = 0;
-    rockets = [];
-    particles = [];
-    players = [];
-    timeSlowTimer = 0;
+    score = 0; frameCount = 0;
+    rockets = []; particles = []; players = []; timeSlowTimer = 0;
 
     if (mode === 'solo' || mode === 'ai') {
-        players.push(new Stickman(W * 0.4, '#00d2d3', 'P1', false, 'p1'));
-        if (mode === 'ai') players.push(new Stickman(W * 0.6, '#ff9f43', 'AI', true, 'p2'));
-        document.getElementById('group-p2').classList.add('hidden');
+        players.push(new Stickman(W * 0.4, '#00d2d3', 'P1', p1SelectedSkill, false, 'p1'));
+        if (mode === 'ai') players.push(new Stickman(W * 0.6, '#ff9f43', 'AI', 'shockwave', true, 'p2'));
+        document.getElementById('joystick-p2').classList.add('hidden');
     } else if (mode === 'pvp') {
-        // 2 Circles / 2 Joysticks for 2P mode!
-        players.push(new Stickman(W * 0.35, '#00d2d3', 'P1', false, 'p1'));
-        players.push(new Stickman(W * 0.65, '#ff9f43', 'P2', false, 'p2'));
-        document.getElementById('group-p2').classList.remove('hidden');
+        players.push(new Stickman(W * 0.35, '#00d2d3', 'P1', p1SelectedSkill, false, 'p1'));
+        players.push(new Stickman(W * 0.65, '#ff9f43', 'P2', p2SelectedSkill, false, 'p2'));
+        document.getElementById('joystick-p2').classList.remove('hidden');
     }
 
     document.getElementById('menu-screen').classList.add('hidden');
@@ -725,37 +727,25 @@ function checkGameOver() {
 function gameLoop() {
     requestAnimationFrame(gameLoop);
 
-    ctx.fillStyle = '#0b0e17';
-    ctx.fillRect(0, 0, W, H);
-
-    // Stars
+    ctx.fillStyle = '#0b0e17'; ctx.fillRect(0, 0, W, H);
     for (const s of stars) {
         ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
         ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
     }
-
-    // Platforms
     for (const pf of platforms) {
-        ctx.fillStyle = '#2f3542';
-        ctx.beginPath(); ctx.roundRect(pf.x, pf.y, pf.w, pf.h, 4); ctx.fill();
+        ctx.fillStyle = '#2f3542'; ctx.beginPath(); ctx.roundRect(pf.x, pf.y, pf.w, pf.h, 4); ctx.fill();
     }
-
-    // Ground
-    ctx.fillStyle = '#1e222d';
-    ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+    ctx.fillStyle = '#1e222d'; ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
     ctx.strokeStyle = '#ff4757'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(W, GROUND_Y); ctx.stroke();
 
     if (gameRunning) {
-        frameCount++;
-        score += 0.25;
+        frameCount++; score += 0.25;
         if (timeSlowTimer > 0) timeSlowTimer--;
         if (frameCount % 10 === 0) updateHUD();
 
         const spawnInt = Math.max(20, Math.floor(50 - score / 35));
-        if (frameCount % spawnInt === 0) {
-            rockets.push(new Rocket(Math.random() < 0.7 ? 'vertical' : 'horizontal'));
-        }
+        if (frameCount % spawnInt === 0) rockets.push(new Rocket(Math.random() < 0.7 ? 'vertical' : 'horizontal'));
 
         for (const p of players) p.update();
         rockets = rockets.filter(r => r.update());
