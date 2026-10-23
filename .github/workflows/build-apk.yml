@@ -28,6 +28,10 @@ jobs:
         with:
           gradle-version: '8.8'
 
+      - name: Install Android Build Tools
+        run: |
+          echo "y" | sudo /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install "build-tools;33.0.2" "platforms;android-33"
+
       - name: Install Cordova
         run: npm install -g cordova
 
