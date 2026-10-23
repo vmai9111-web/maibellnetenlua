@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>maibellnetenlua - Arena Edition</title>
+    <title>maibellnetenlua - Arena Ultimate Edition</title>
     <style>
         * {
             box-sizing: border-box;
@@ -47,7 +47,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(11, 14, 23, 0.94);
+            background: rgba(11, 14, 23, 0.95);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -60,7 +60,7 @@
             display: none !important;
         }
         h1 {
-            font-size: clamp(26px, 5vw, 42px);
+            font-size: clamp(24px, 5vw, 40px);
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 2px;
@@ -70,36 +70,39 @@
             text-align: center;
         }
         .subtitle {
-            font-size: clamp(11px, 2.5vw, 14px);
+            font-size: clamp(11px, 2.5vw, 13px);
             color: #a4b0be;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             letter-spacing: 1px;
             text-align: center;
         }
         .section-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             color: #00d2d3;
-            margin-top: 6px;
+            margin-top: 4px;
             margin-bottom: 6px;
             text-transform: uppercase;
         }
         .skill-selector-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 6px;
+            margin-bottom: 10px;
             width: 100%;
-            max-width: 600px;
+            max-width: 720px;
             justify-content: center;
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 4px;
         }
         .skill-card {
             background: rgba(255, 255, 255, 0.08);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
-            padding: 8px;
-            width: calc(33% - 8px);
-            min-width: 130px;
+            padding: 6px;
+            width: calc(33% - 6px);
+            min-width: 120px;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -110,43 +113,43 @@
             box-shadow: 0 0 10px rgba(255, 165, 2, 0.4);
         }
         .skill-card h4 {
-            font-size: 12px;
+            font-size: 11px;
             color: #ffffff;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
         .skill-card p {
-            font-size: 10px;
+            font-size: 9px;
             color: #a4b0be;
-            line-height: 1.2;
+            line-height: 1.1;
         }
 
         .btn-group {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
-            max-width: 300px;
-            margin-top: 8px;
+            max-width: 280px;
+            margin-top: 6px;
         }
         .btn {
-            padding: 12px 18px;
-            font-size: 14px;
+            padding: 10px 16px;
+            font-size: 13px;
             font-weight: 700;
             color: #fff;
             background: linear-gradient(135deg, #ff4757, #ff6b81);
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            box-shadow: 0 4px 0 #b33939;
+            box-shadow: 0 3px 0 #b33939;
             text-align: center;
         }
         .btn.secondary {
             background: linear-gradient(135deg, #1e90ff, #5352ed);
-            box-shadow: 0 4px 0 #182c61;
+            box-shadow: 0 3px 0 #182c61;
         }
         .btn.tertiary {
             background: linear-gradient(135deg, #2ed573, #1eae60);
-            box-shadow: 0 4px 0 #166d3b;
+            box-shadow: 0 3px 0 #166d3b;
         }
 
         #hud {
@@ -283,10 +286,10 @@
         </div>
     </div>
 
-    <!-- MAIN MENU STEP 1: CHỌN CHẾ ĐỘ -->
+    <!-- BƯỚC 1: CHỌN CHẾ ĐỘ -->
     <div id="mode-screen" class="overlay">
         <h1>MAIBELLNETENLUA</h1>
-        <div class="subtitle">TOP-DOWN 2D ARENA</div>
+        <div class="subtitle">TOP-DOWN 2D ARENA ULTIMATE</div>
         <div class="btn-group">
             <button class="btn" onclick="selectMode('solo')">1 NGƯỜI (SINH TỒN)</button>
             <button class="btn secondary" onclick="selectMode('ai')">ĐẤU VỚI MÁY (VS BOT)</button>
@@ -294,58 +297,78 @@
         </div>
     </div>
 
-    <!-- MAIN MENU STEP 2: CHỌN KỸ NĂNG -->
+    <!-- BƯỚC 2: CHỌN KỸ NĂNG -->
     <div id="skill-screen" class="overlay hidden">
         <h1>CHỌN KĨ NĂNG</h1>
-        <div class="subtitle">THẢ CẦU JOYSTICK ĐỂ MÚT SKILL!</div>
+        <div class="subtitle">XOAY JOYSTICK & THẢ CẦU ĐỂ PHÁT SKILL!</div>
 
         <!-- P1 Skills -->
         <div class="section-title" id="p1-title-skill">KĨ NĂNG NGƯỜI CHƠI 1</div>
         <div class="skill-selector-container" id="p1-skills">
-            <div class="skill-card selected" onclick="pickSkill('p1', 'rocket', this)">
-                <h4>🚀 BẮN TÊN LỬA</h4>
-                <p>Thả cần: Bắn 1 tên lửa về phía trước (CD 6s)</p>
+            <div class="skill-card selected" onclick="pickSkill('p1', 'sword', this)">
+                <h4>⚔️ CHÉM KIẾM</h4>
+                <p>Chém choáng & hất văng tên lửa (CD 5s)</p>
+            </div>
+            <div class="skill-card" onclick="pickSkill('p1', 'wall', this)">
+                <h4>🛡️ TƯỜNG VÒNG CUNG</h4>
+                <p>Dựng tường cong chặn sạch đạn (CD 10s)</p>
+            </div>
+            <div class="skill-card" onclick="pickSkill('p1', 'blackhole', this)">
+                <h4>🕳️ HỐ ĐÊN</h4>
+                <p>Tạo xoáy hút & nuốt chửng tên lửa (CD 12s)</p>
+            </div>
+            <div class="skill-card" onclick="pickSkill('p1', 'emp', this)">
+                <h4>⚡ SÓNG EMP</h4>
+                <p>Xóa sạch đạn xung quanh ngay (CD 9s)</p>
+            </div>
+            <div class="skill-card" onclick="pickSkill('p1', 'barrage', this)">
+                <h4>🚀 MƯA TÊN LỬA</h4>
+                <p>Bắn ra 3 quả tên lửa dạng quạt (CD 7s)</p>
             </div>
             <div class="skill-card" onclick="pickSkill('p1', 'chain', this)">
                 <h4>⛓️ XIỀNG XÍCH</h4>
-                <p>Thả cần: Bắn xích trói đối thủ 0.5s (CD 10s)</p>
+                <p>Bắn xích trói đối thủ 0.5s (CD 10s)</p>
             </div>
             <div class="skill-card" onclick="pickSkill('p1', 'clone', this)">
                 <h4>👥 PHÂN THÂN</h4>
-                <p>Thả cần: Tạo 2 bản thể 1 máu (CD 15s)</p>
+                <p>Tạo 2 bản thể đồng bộ 1 máu (CD 15s)</p>
             </div>
-            <div class="skill-card" onclick="pickSkill('p1', 'dash', this)">
-                <h4>⚡ QUANTUM DASH</h4>
-                <p>Thả cần: Tốc biến lướt né đạn (CD 4s)</p>
+            <div class="skill-card" onclick="pickSkill('p1', 'portal', this)">
+                <h4>🌀 CỔNG KHÔNG GIAN</h4>
+                <p>Đặt điểm neo & biến ngược lại (CD 10s)</p>
             </div>
-            <div class="skill-card" onclick="pickSkill('p1', 'shockwave', this)">
-                <h4>💥 SHOCKWAVE</h4>
-                <p>Thả cần: Sóng đẩy lùi tên lửa (CD 4s)</p>
+            <div class="skill-card" onclick="pickSkill('p1', 'decoy', this)">
+                <h4>💣 BẪY ẢNH ẢO</h4>
+                <p>Để lại bóng nổ nhử tên lửa đuổi (CD 8s)</p>
             </div>
         </div>
 
-        <!-- P2 or BOT Skills -->
+        <!-- P2 / BOT Skills -->
         <div class="section-title hidden" id="p2-title-skill">KĨ NĂNG BOT / NGƯỜI CHƠI 2</div>
         <div class="skill-selector-container hidden" id="p2-skills">
             <div class="skill-card selected" onclick="pickSkill('p2', 'chain', this)">
                 <h4>⛓️ XIỀNG XÍCH</h4>
-                <p>Thả cần: Bắn xích trói đối thủ 0.5s (CD 10s)</p>
+                <p>Bắn xích trói đối thủ 0.5s (CD 10s)</p>
             </div>
-            <div class="skill-card" onclick="pickSkill('p2', 'rocket', this)">
-                <h4>🚀 BẮN TÊN LỬA</h4>
-                <p>Thả cần: Bắn 1 tên lửa về phía trước (CD 6s)</p>
+            <div class="skill-card" onclick="pickSkill('p2', 'sword', this)">
+                <h4>⚔️ CHÉM KIẾM</h4>
+                <p>Chém choáng & hất văng tên lửa (CD 5s)</p>
+            </div>
+            <div class="skill-card" onclick="pickSkill('p2', 'wall', this)">
+                <h4>🛡️ TƯỜNG VÒNG CUNG</h4>
+                <p>Dựng tường cong chặn sạch đạn (CD 10s)</p>
+            </div>
+            <div class="skill-card" onclick="pickSkill('p2', 'blackhole', this)">
+                <h4>🕳️ HỐ ĐÊN</h4>
+                <p>Tạo xoáy hút & nuốt chửng tên lửa (CD 12s)</p>
+            </div>
+            <div class="skill-card" onclick="pickSkill('p2', 'barrage', this)">
+                <h4>🚀 MƯA TÊN LỬA</h4>
+                <p>Bắn ra 3 quả tên lửa dạng quạt (CD 7s)</p>
             </div>
             <div class="skill-card" onclick="pickSkill('p2', 'clone', this)">
                 <h4>👥 PHÂN THÂN</h4>
-                <p>Thả cần: Tạo 2 bản thể 1 máu (CD 15s)</p>
-            </div>
-            <div class="skill-card" onclick="pickSkill('p2', 'dash', this)">
-                <h4>⚡ QUANTUM DASH</h4>
-                <p>Thả cần: Tốc biến lướt né đạn (CD 4s)</p>
-            </div>
-            <div class="skill-card" onclick="pickSkill('p2', 'shockwave', this)">
-                <h4>💥 SHOCKWAVE</h4>
-                <p>Thả cần: Sóng đẩy lùi tên lửa (CD 4s)</p>
+                <p>Tạo 2 bản thể đồng bộ 1 máu (CD 15s)</p>
             </div>
         </div>
 
@@ -377,14 +400,18 @@ let gameRunning = false;
 let score = 0;
 let frameCount = 0;
 let screenShake = 0;
+
 let players = [];
 let rockets = [];
 let particles = [];
 let powerups = [];
 let chains = [];
-let timeSlowTimer = 0;
+let curvedWalls = [];
+let blackHoles = [];
+let portalAnchors = [];
+let decoys = [];
 
-let p1Skill = 'rocket';
+let p1Skill = 'sword';
 let p2Skill = 'chain';
 
 function selectMode(mode) {
@@ -448,6 +475,10 @@ class PlayerOrb {
         this.speedBoost = 0;
         this.activeClones = 0;
 
+        // Trạng thái chém kiếm
+        this.swordSlashTimer = 0;
+        this.portalData = null;
+
         this.lastDirX = 1;
         this.lastDirY = 0;
     }
@@ -457,14 +488,15 @@ class PlayerOrb {
 
         if (this.invincible > 0) this.invincible--;
         if (this.speedBoost > 0) this.speedBoost--;
+        if (this.swordSlashTimer > 0) this.swordSlashTimer--;
+
         if (this.stunTimer > 0) {
             this.stunTimer--;
-            return; // Đứng yên khi bị trói bằng xích
+            return;
         }
 
-        // Đợi các phân thân chết hết mới đếm thời gian hồi chiêu
         if (this.skillType === 'clone' && this.activeClones > 0) {
-            // Đang giữ phân thân -> Không đếm CD
+            // Đợi phân thân chết hết
         } else {
             if (this.skillCooldown > 0) this.skillCooldown--;
         }
@@ -473,7 +505,6 @@ class PlayerOrb {
         let releaseSkill = false;
 
         if (this.isClone) {
-            // Phân thân di chuyển theo Joystick chính
             const st = joyState[this.id];
             inputX = st.dirX; inputY = st.dirY;
         } else if (this.isAI) {
@@ -513,7 +544,7 @@ class PlayerOrb {
             const cdEl = document.getElementById('cd-' + this.id);
             if (cdEl) {
                 if (this.skillType === 'clone' && this.activeClones > 0) {
-                    cdEl.textContent = `PHÂN THÂN ĐANG SỐNG (${this.activeClones})`;
+                    cdEl.textContent = `PHÂN THÂN SỐNG (${this.activeClones})`;
                     cdEl.style.color = '#00d2d3';
                 } else if (this.skillCooldown > 0) {
                     cdEl.textContent = `SKILL: ${(this.skillCooldown / 60).toFixed(1)}s`;
@@ -531,41 +562,78 @@ class PlayerOrb {
         const nx = this.lastDirX / len;
         const ny = this.lastDirY / len;
 
-        if (this.skillType === 'rocket') {
-            this.skillCooldown = 360; // 6s CD
-            const r = new Rocket('player');
-            r.x = this.x + nx * 20;
-            r.y = this.y + ny * 20;
-            r.vx = nx * 8;
-            r.vy = ny * 8;
-            r.owner = this;
-            rockets.push(r);
+        if (this.skillType === 'sword') {
+            this.skillCooldown = 300; // 5s
+            this.swordSlashTimer = 22; // Độ trễ vung kiếm
+
+            // Quét vụt văng tên lửa & choáng đối thủ
+            for (let r of rockets) {
+                if (Math.hypot(r.x - (this.x + nx * 25), r.y - (this.y + ny * 25)) < 45) {
+                    r.vx = nx * 10;
+                    r.vy = ny * 10;
+                    r.type = 'player';
+                    r.owner = this;
+                }
+            }
+            for (let p of players) {
+                if (p !== this && p.alive && Math.hypot(p.x - (this.x + nx * 25), p.y - (this.y + ny * 25)) < 45) {
+                    p.stunTimer = 36; // Choáng 0.6s
+                    p.x += nx * 20; p.y += ny * 20;
+                }
+            }
+            screenShake = 8;
+        } else if (this.skillType === 'wall') {
+            this.skillCooldown = 600; // 10s
+            curvedWalls.push(new CurvedWall(this.x + nx * 35, this.y + ny * 35, Math.atan2(ny, nx)));
+        } else if (this.skillType === 'blackhole') {
+            this.skillCooldown = 720; // 12s
+            blackHoles.push(new BlackHole(this.x + nx * 80, this.y + ny * 80));
+        } else if (this.skillType === 'emp') {
+            this.skillCooldown = 540; // 9s
+            for (let i = rockets.length - 1; i >= 0; i--) {
+                if (Math.hypot(rockets[i].x - this.x, rockets[i].y - this.y) < 180) {
+                    for (let k = 0; k < 8; k++) particles.push(new Particle(rockets[i].x, rockets[i].y, '#00d2d3', (Math.random()-0.5)*8, (Math.random()-0.5)*8, 15));
+                    rockets.splice(i, 1);
+                }
+            }
+            screenShake = 12;
+        } else if (this.skillType === 'barrage') {
+            this.skillCooldown = 420; // 7s
+            for (let i = -1; i <= 1; i++) {
+                const angle = Math.atan2(ny, nx) + i * 0.25;
+                const r = new Rocket('player');
+                r.x = this.x + Math.cos(angle) * 20;
+                r.y = this.y + Math.sin(angle) * 20;
+                r.vx = Math.cos(angle) * 8;
+                r.vy = Math.sin(angle) * 8;
+                r.owner = this;
+                rockets.push(r);
+            }
         } else if (this.skillType === 'chain') {
-            this.skillCooldown = 600; // 10s CD
+            this.skillCooldown = 600; // 10s
             chains.push(new ChainProj(this.x, this.y, nx * 12, ny * 12, this));
         } else if (this.skillType === 'clone') {
             if (this.activeClones === 0) {
                 this.activeClones = 2;
-                this.skillCooldown = 900; // 15s CD sau khi phân thân chết
+                this.skillCooldown = 900; // 15s
                 players.push(new PlayerOrb(this.x + 30, this.y + 30, this.color, this.name + ' (PT)', 'none', this.isAI, this.id, true, this));
                 players.push(new PlayerOrb(this.x - 30, this.y - 30, this.color, this.name + ' (PT)', 'none', this.isAI, this.id, true, this));
             }
-        } else if (this.skillType === 'dash') {
-            this.skillCooldown = 240; // 4s CD
-            this.x += nx * 150;
-            this.y += ny * 150;
-            this.invincible = 30;
-            for (let i = 0; i < 18; i++) particles.push(new Particle(this.x, this.y, '#00d2d3', (Math.random()-0.5)*10, (Math.random()-0.5)*10, 20));
-        } else if (this.skillType === 'shockwave') {
-            this.skillCooldown = 240; // 4s CD
-            for (let r of rockets) {
-                if (Math.hypot(r.x - this.x, r.y - this.y) < 220) {
-                    r.vx = (r.x - this.x) * 0.18;
-                    r.vy = (r.y - this.y) * 0.18;
-                }
+        } else if (this.skillType === 'portal') {
+            if (!this.portalData) {
+                this.portalData = { x: this.x, y: this.y, timer: 180 };
+                this.x += nx * 120; this.y += ny * 120;
+                this.skillCooldown = 60; // Nút bấm kích hoạt biến về
+            } else {
+                this.x = this.portalData.x;
+                this.y = this.portalData.y;
+                this.portalData = null;
+                this.skillCooldown = 600; // 10s
             }
-            screenShake = 12;
-            for (let i = 0; i < 25; i++) particles.push(new Particle(this.x, this.y, '#ffa502', (Math.random()-0.5)*12, (Math.random()-0.5)*12, 25));
+        } else if (this.skillType === 'decoy') {
+            this.skillCooldown = 480; // 8s
+            decoys.push(new Decoy(this.x, this.y));
+            this.x += nx * 120; this.y += ny * 120;
         }
     }
 
@@ -622,6 +690,18 @@ class PlayerOrb {
         ctx.save();
         ctx.translate(this.x, this.y);
 
+        // Hiệu ứng chém kiếm
+        if (this.swordSlashTimer > 0) {
+            ctx.save();
+            ctx.rotate(this.angle);
+            ctx.beginPath();
+            ctx.arc(10, 0, 35, -Math.PI / 3, Math.PI / 3);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            ctx.restore();
+        }
+
         if (this.stunTimer > 0) {
             ctx.strokeStyle = '#a4b0be';
             ctx.lineWidth = 3;
@@ -665,9 +745,88 @@ class PlayerOrb {
     }
 }
 
+class CurvedWall {
+    constructor(x, y, angle) {
+        this.x = x; this.y = y; this.angle = angle;
+        this.life = 240; // 4s
+        this.hp = 3;
+    }
+    update() {
+        this.life--;
+        return this.life > 0 && this.hp > 0;
+    }
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.beginPath();
+        ctx.arc(-20, 0, 35, -Math.PI / 3, Math.PI / 3);
+        ctx.strokeStyle = '#1e90ff';
+        ctx.lineWidth = 6;
+        ctx.stroke();
+        ctx.restore();
+    }
+}
+
+class BlackHole {
+    constructor(x, y) {
+        this.x = x; this.y = y; this.life = 90; // 1.5s
+    }
+    update() {
+        this.life--;
+        for (let i = rockets.length - 1; i >= 0; i--) {
+            const r = rockets[i];
+            const dist = Math.hypot(r.x - this.x, r.y - this.y);
+            if (dist < 120) {
+                r.vx += (this.x - r.x) * 0.1;
+                r.vy += (this.y - r.y) * 0.1;
+                if (dist < 20) rockets.splice(i, 1);
+            }
+        }
+        return this.life > 0;
+    }
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.beginPath();
+        ctx.arc(0, 0, 25, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,0,0,0.8)';
+        ctx.fill();
+        ctx.strokeStyle = '#5352ed';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.restore();
+    }
+}
+
+class Decoy {
+    constructor(x, y) {
+        this.x = x; this.y = y; this.life = 180;
+    }
+    update() {
+        this.life--;
+        for (let i = rockets.length - 1; i >= 0; i--) {
+            if (Math.hypot(rockets[i].x - this.x, rockets[i].y - this.y) < 20) {
+                for (let k = 0; k < 15; k++) particles.push(new Particle(this.x, this.y, '#ff4757', (Math.random()-0.5)*8, (Math.random()-0.5)*8, 20));
+                rockets.splice(i, 1);
+                return false;
+            }
+        }
+        return this.life > 0;
+    }
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 71, 87, 0.4)'; ctx.fill();
+        ctx.strokeStyle = '#ff4757'; ctx.setLineDash([3, 3]); ctx.stroke();
+        ctx.restore();
+    }
+}
+
 class Rocket {
     constructor(type = 'enemy') {
-        this.type = type; // 'enemy', 'homing', 'player'
+        this.type = type;
         this.radius = 8;
         this.owner = null;
 
@@ -690,11 +849,18 @@ class Rocket {
     }
 
     update() {
-        const spdMult = timeSlowTimer > 0 ? 0.4 : 1;
+        // Tương tác va chạm với Tường Cong Chắn Đạn
+        for (let w of curvedWalls) {
+            if (Math.hypot(w.x - this.x, w.y - this.y) < 30) {
+                w.hp--;
+                return false;
+            }
+        }
 
         if (this.type === 'homing' && this.homingLife > 0) {
             this.homingLife--;
-            const targets = players.filter(p => p.alive);
+            // Đuổi theo Decoy hoặc Player
+            let targets = decoys.length > 0 ? decoys : players.filter(p => p.alive);
             if (targets.length > 0) {
                 let target = targets[0];
                 let minD = Math.hypot(target.x - this.x, target.y - this.y);
@@ -709,8 +875,8 @@ class Rocket {
             }
         }
 
-        this.x += this.vx * spdMult;
-        this.y += this.vy * spdMult;
+        this.x += this.vx;
+        this.y += this.vy;
 
         if (this.x < -60 || this.x > W + 60 || this.y < -60 || this.y > H + 60) return false;
 
@@ -757,7 +923,7 @@ class ChainProj {
         for (const p of players) {
             if (!p.alive || p === this.owner) continue;
             if (Math.hypot(p.x - this.x, p.y - this.y) < p.radius + 10) {
-                p.stunTimer = 30; // Trói cố định trong 0.5s (30 khung hình)
+                p.stunTimer = 30; // Trói cố định trong 0.5s
                 return false;
             }
         }
@@ -898,7 +1064,7 @@ setupJoystick('joystick-p2', 'stick-p2', 'p2');
 
 function startMatch() {
     score = 0; frameCount = 0;
-    rockets = []; particles = []; powerups = []; chains = []; players = []; timeSlowTimer = 0;
+    rockets = []; particles = []; powerups = []; chains = []; curvedWalls = []; blackHoles = []; decoys = []; players = [];
 
     if (selectedMode === 'solo' || selectedMode === 'ai') {
         players.push(new PlayerOrb(W * 0.4, H / 2, '#00d2d3', 'P1', p1Skill, false, 'p1'));
@@ -947,13 +1113,11 @@ function gameLoop() {
 
     if (gameRunning) {
         frameCount++; score += 0.25;
-        if (timeSlowTimer > 0) timeSlowTimer--;
         if (frameCount % 10 === 0) updateHUD();
 
-        // Tên lửa ngẫu nhiên (Tên lửa thường + Tên lửa tầm nhiệt Homing)
         const spawnInt = Math.max(18, Math.floor(45 - score / 35));
         if (frameCount % spawnInt === 0) {
-            rockets.push(new Rocket(Math.random() < 0.3 ? 'homing' : 'enemy'));
+            rockets.push(new Rocket(Math.random() < 0.35 ? 'homing' : 'enemy'));
         }
 
         if (frameCount % 360 === 0 && powerups.length < 3) {
@@ -963,10 +1127,16 @@ function gameLoop() {
         for (const p of players) p.update();
         rockets = rockets.filter(r => r.update());
         chains = chains.filter(c => c.update());
+        curvedWalls = curvedWalls.filter(w => w.update());
+        blackHoles = blackHoles.filter(b => b.update());
+        decoys = decoys.filter(d => d.update());
         powerups = powerups.filter(pw => pw.update());
         particles = particles.filter(pt => pt.update());
     }
 
+    for (const w of curvedWalls) w.draw();
+    for (const b of blackHoles) b.draw();
+    for (const d of decoys) d.draw();
     for (const pw of powerups) pw.draw();
     for (const c of chains) c.draw();
     for (const p of players) p.draw();
